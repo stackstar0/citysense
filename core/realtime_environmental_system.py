@@ -1047,7 +1047,7 @@ class RealTimeEnvironmentalSystem:
         """Generate dynamic, weather and climate-responsive recommendations"""
         import random
         import math
-        
+
         # Get current weather and environmental data for the city
         weather_configs = {
             'mumbai': {'temp': 27, 'humidity': 75, 'aqi': 145, 'wind': 8, 'climate': 'tropical_monsoon'},
@@ -1061,20 +1061,20 @@ class RealTimeEnvironmentalSystem:
             'singapore': {'temp': 28, 'humidity': 84, 'aqi': 35, 'wind': 4, 'climate': 'tropical_rainforest'},
             'sydney': {'temp': 20, 'humidity': 65, 'aqi': 25, 'wind': 11, 'climate': 'humid_subtropical'}
         }
-        
+
         config = weather_configs.get(city, weather_configs['new-york'])
         city_name = city.replace('-', ' ').title()
         now = datetime.now()
         hour = now.hour
-        
+
         # Add real-time weather variations
         current_temp = config['temp'] + random.uniform(-3, 3) + 2 * math.sin(hour * math.pi / 12)
         current_humidity = max(20, min(95, config['humidity'] + random.uniform(-10, 10)))
         current_aqi = max(5, config['aqi'] + random.uniform(-15, 15))
         current_wind = max(0, config['wind'] + random.uniform(-3, 3))
-        
+
         recommendations = []
-        
+
         # Weather-responsive primary recommendation
         if current_temp > 30 and config['climate'] in ['hot_desert', 'tropical_monsoon']:
             # Hot climate cooling solutions
@@ -1140,7 +1140,7 @@ class RealTimeEnvironmentalSystem:
                 design_principles=['solar optimization', 'wind integration', 'smart grid'],
                 technical_specifications={'solar_capacity': f'{max(1, int(current_temp/10))}MW', 'wind_capacity': f'{max(0.5, current_wind/10):.1f}MW', 'efficiency': f'{85+int(current_wind)}%'}
             ))
-        
+
         # Humidity-responsive water management
         if current_humidity > 75:
             # High humidity water solutions
@@ -1174,7 +1174,7 @@ class RealTimeEnvironmentalSystem:
                 design_principles=['smart irrigation', 'drought resistance', 'water efficiency'],
                 technical_specifications={'water_savings': f'{max(20, 100-current_humidity):.0f}%', 'coverage': f'{int(current_temp*2)} km²', 'sensors': f'{int(current_temp*10)}'}
             ))
-        
+
         # Climate-adaptive biodiversity solutions
         bio_impact = round(65 + random.uniform(-12, 18), 0)
         if config['climate'] in ['tropical_rainforest', 'tropical_monsoon']:
@@ -1193,7 +1193,7 @@ class RealTimeEnvironmentalSystem:
             bio_focus = 'Temperate Ecosystem Enhancement'
             bio_description = f'Create balanced temperate ecosystems for {current_temp:.1f}°C and {current_humidity:.0f}% humidity conditions.'
             bio_principles = ['native adaptation', 'seasonal variation', 'ecosystem balance']
-            
+
         recommendations.append(ClimateRecommendation(
             recommendation_id=f'biodiversity_{city}_{now.hour}_{now.second}',
             category='BIODIVERSITY',
@@ -1207,7 +1207,7 @@ class RealTimeEnvironmentalSystem:
             design_principles=bio_principles,
             technical_specifications={'area': f'{max(5, int(current_temp))} hectares', 'species': f'{max(20, int(current_humidity*0.8))}+', 'adaptation_score': f'{bio_impact}%'}
         ))
-        
+
         return recommendations
 
     async def _generate_city_sensors(self, city: str) -> Dict[str, List[SensorReading]]:
