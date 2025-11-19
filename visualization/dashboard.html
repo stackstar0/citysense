@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RegeneraX - City Intelligence Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    .dashboard-container {
+      min-height: 100vh;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 20px;
+    }
+
+    .header {
+      grid-column: 1 / -1;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo i {
+      font-size: 2rem;
+      color: #00ff88;
+    }
+
+    .logo h1 {
+      font-size: 1.8rem;
+      font-weight: 300;
+      letter-spacing: 2px;
+    }
+
+    .status-indicators {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #00ff88;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .sidebar {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      height: fit-content;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto 1fr;
+      gap: 20px;
+    }
+
+    .vital-signs {
+      grid-column: 1 / -1;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .vital-signs h2 {
+      margin-bottom: 20px;
+      color: #00ff88;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .vital-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .metric-label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .city-view {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .insights-panel {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .analytics-grid {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+    }
+
+    .analytics-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-top: 20px;
+    }
+
+    .insight-item {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      border-left: 4px solid;
+    }
+
+    .insight-critical {
+      border-left-color: #ff4757;
+    }
+
+    .insight-high {
+      border-left-color: #ffa502;
+    }
+
+    .insight-medium {
+      border-left-color: #3742fa;
+    }
+
+    .insight-low {
+      border-left-color: #2ed573;
+    }
+
+    .sensor-status {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .sensor-item {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .status-connected {
+      color: #00ff88;
+    }
+
+    .status-disconnected {
+      color: #ff4757;
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      font-size: 1.2rem;
+      opacity: 0.7;
+    }
+
+    .loading i {
+      margin-right: 10px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .optimization-actions {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .action-item {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 8px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .action-priority {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+
+    .priority-emergency {
+      background: #ff4757;
+      color: white;
+    }
+
+    .priority-high {
+      background: #ffa502;
+      color: white;
+    }
+
+    .priority-medium {
+      background: #3742fa;
+      color: white;
+    }
+
+    .priority-low {
+      background: #2ed573;
+      color: white;
+    }
+
+    #three-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .city-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .tab.active {
+      color: #00ff88;
+      border-bottom-color: #00ff88;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <i class="fas fa-city"></i>
+        <div>
+          <h1>RegeneraX</h1>
+          <p style="font-size: 0.8rem; opacity: 0.7;">The Intelligence of Living Cities</p>
+        </div>
+      </div>
+      <div class="status-indicators">
+        <div class="connection-status">
+          <div class="status-dot" id="connection-status"></div>
+          <span id="connection-text">Connecting...</span>
+        </div>
+        <div style="font-size: 0.9rem; opacity: 0.8;">
+          <span id="current-time"></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h3 style="margin-bottom: 20px; color: #00ff88;">
+        <i class="fas fa-cog"></i> System Overview
+      </h3>
+
+      <!-- System Status -->
+      <div style="margin-bottom: 25px;">
+        <h4 style="margin-bottom: 10px;">Network Health</h4>
+        <div class="sensor-status" id="sensor-status">
+          <div class="loading">
+            <i class="fas fa-spinner"></i>
+            Loading...
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Patterns -->
+      <div>
+        <h4 style="margin-bottom: 10px;">Active Patterns</h4>
+        <div id="pattern-summary">
+          <div class="loading">
+            <i class="fas fa-spinner"></i>
+            Analyzing...
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- City Vital Signs -->
+      <section class="vital-signs">
+        <h2>
+          <i class="fas fa-heartbeat"></i>
+          City Vital Signs
+        </h2>
+        <div class="vital-metrics" id="vital-metrics">
+          <div class="loading">
+            <i class="fas fa-spinner"></i>
+            Loading vital signs...
+          </div>
+        </div>
+      </section>
+
+      <!-- 3D City View -->
+      <section class="city-view">
+        <div class="city-controls">
+          <button class="control-btn" onclick="resetCameraView()">
+            <i class="fas fa-home"></i>
+          </button>
+          <button class="control-btn" onclick="toggleAnimation()">
+            <i class="fas fa-play" id="anim-icon"></i>
+          </button>
+          <button class="control-btn" onclick="refreshCharts()" title="Refresh Charts">
+            <i class="fas fa-chart-line"></i>
+          </button>
+        </div>
+        <canvas id="three-canvas"></canvas>
+      </section>
+
+      <!-- Insights Panel -->
+      <section class="insights-panel">
+        <h3 style="margin-bottom: 20px; color: #00ff88;">
+          <i class="fas fa-lightbulb"></i>
+          City Insights
+        </h3>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab('insights')">Insights</div>
+          <div class="tab" onclick="switchTab('optimizations')">Optimizations</div>
+        </div>
+        <div class="tab-content active" id="insights-content">
+          <div id="insights-list">
+            <div class="loading">
+              <i class="fas fa-spinner"></i>
+              Analyzing city data...
+            </div>
+          </div>
+        </div>
+        <div class="tab-content" id="optimizations-content">
+          <div class="optimization-actions" id="optimization-list">
+            <div class="loading">
+              <i class="fas fa-spinner"></i>
+              Loading optimizations...
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Analytics Grid -->
+      <section class="analytics-grid">
+        <!-- Air Quality Chart -->
+        <div class="analytics-card">
+          <h4><i class="fas fa-wind"></i> Air Quality Trends</h4>
+          <div class="chart-container">
+            <canvas id="air-quality-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Energy Consumption Chart -->
+        <div class="analytics-card">
+          <h4><i class="fas fa-bolt"></i> Energy Patterns</h4>
+          <div class="chart-container">
+            <canvas id="energy-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Traffic Flow Chart -->
+        <div class="analytics-card">
+          <h4><i class="fas fa-car"></i> Traffic Analytics</h4>
+          <div class="chart-container">
+            <canvas id="traffic-chart"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Global variables
+    let ws = null;
+    let scene, camera, renderer, cityModel;
+    let animationId = null;
+    let isAnimating = false;
+    let charts = {};
+
+    // API connection using HTTP requests instead of WebSocket
+    let refreshInterval = null;
+
+    function startAPIPolling() {
+      console.log('Starting API polling...');
+      updateConnectionStatus(true);
+
+      // Initial load
+      loadAllData();
+
+      // Poll every 5 seconds
+      refreshInterval = setInterval(loadAllData, 5000);
+    }
+
+    async function loadAllData() {
+      try {
+        // Load city stats
+        const cityStats = await fetchAPI('/api/city-stats');
+        if (cityStats) {
+          updateVitalSigns(cityStats);
+        }
+
+        // Load sensor data
+        const sensorData = await fetchAPI('/api/sensors');
+        if (sensorData) {
+          updateSensorStatus({ sensors_active: true, sensors: sensorData });
+        }
+
+        // Load predictions as insights
+        const predictions = await fetchAPI('/api/predictions');
+        if (predictions) {
+          const insights = predictions.map((pred, idx) => ({
+            title: `Hour ${pred.hour} Prediction`,
+            description: `City health predicted at ${(pred.predicted_health * 100).toFixed(1)}%`,
+            confidence_score: pred.confidence,
+            priority: pred.confidence > 0.9 ? 'high' : pred.confidence > 0.8 ? 'medium' : 'low'
+          }));
+          updateInsights(insights);
+        }
+
+        // Load recommendations as optimizations
+        const recommendations = await fetchAPI('/api/recommendations');
+        if (recommendations) {
+          const optimizations = recommendations.map((rec, idx) => ({
+            description: rec,
+            priority: idx < 2 ? 'high' : 'medium',
+            implementation_time_minutes: Math.floor(Math.random() * 60) + 15,
+            target_systems: ['Infrastructure', 'Energy', 'Environment']
+          }));
+          updateOptimizations(optimizations);
+        }
+
+        // Update patterns (initialize with defaults)
+        updatePatterns(null);
+
+        updateConnectionStatus(true);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        updateConnectionStatus(false);
+      }
+    }
+
+    async function fetchAPI(endpoint) {
+      try {
+        const response = await fetch(endpoint);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.json();
+      } catch (error) {
+        console.error(`Error fetching ${endpoint}:`, error);
+        return null;
+      }
+    }
+
+    function handleWebSocketMessage(data) {
+      switch (data.type) {
+        case 'vital_signs_update':
+          updateVitalSigns(data.data);
+          break;
+        case 'sensor_data_update':
+          updateSensorStatus(data.data);
+          break;
+        case 'insights_update':
+          updateInsights(data.data);
+          break;
+        case 'optimization_update':
+          updateOptimizations(data.data);
+          break;
+        case 'pattern_update':
+          updatePatterns(data.data);
+          break;
+        case 'system_status_update':
+          updateSystemStatus(data.data);
+          break;
+      }
+    }
+
+    function updateConnectionStatus(connected) {
+      const statusDot = document.getElementById('connection-status');
+      const statusText = document.getElementById('connection-text');
+
+      if (connected) {
+        statusDot.style.background = '#00ff88';
+        statusText.textContent = 'Connected';
+        statusText.className = 'status-connected';
+      } else {
+        statusDot.style.background = '#ff4757';
+        statusText.textContent = 'Disconnected';
+        statusText.className = 'status-disconnected';
+      }
+    }
+
+    function updateVitalSigns(vitalSigns) {
+      const container = document.getElementById('vital-metrics');
+
+      if (!vitalSigns || Object.keys(vitalSigns).length === 0) {
+        container.innerHTML = '<div class="loading">No vital signs data available</div>';
+        return;
+      }
+
+      const metrics = [
+        { key: 'overall_health', label: 'Overall Health', icon: 'heartbeat', suffix: '%' },
+        { key: 'air_quality', label: 'Air Quality', icon: 'wind', suffix: '%' },
+        { key: 'energy_efficiency', label: 'Energy Efficiency', icon: 'bolt', suffix: '%' },
+        { key: 'water_efficiency', label: 'Water Efficiency', icon: 'tint', suffix: '%' },
+        { key: 'carbon_footprint', label: 'Carbon Score', icon: 'leaf', suffix: '%' },
+        { key: 'biodiversity_index', label: 'Biodiversity', icon: 'seedling', suffix: '%' },
+        { key: 'noise_pollution', label: 'Noise Control', icon: 'volume-down', suffix: '%' }
+      ];
+
+      container.innerHTML = metrics.map(metric => {
+        const value = vitalSigns[metric.key] || 0;
+        const percentValue = Math.round(value * 100); // Convert 0-1 to 0-100%
+        const color = getMetricColor(percentValue);
+
+        return `
+                    <div class="metric-card">
+                        <i class="fas fa-${metric.icon}" style="color: ${color}; font-size: 1.5rem;"></i>
+                        <div class="metric-value" style="color: ${color};">
+                            ${percentValue}${metric.suffix}
+                        </div>
+                        <div class="metric-label">${metric.label}</div>
+                    </div>
+                `;
+      }).join('');
+
+      // Update charts with new data
+      updateChartsWithVitalSigns(vitalSigns);
+    }
+
+    function getMetricColor(value) {
+      if (value >= 80) return '#2ed573';
+      if (value >= 60) return '#3742fa';
+      if (value >= 40) return '#ffa502';
+      return '#ff4757';
+    }
+
+    function updateSensorStatus(sensorData) {
+      const container = document.getElementById('sensor-status');
+
+      if (!sensorData || !sensorData.sensors) {
+        container.innerHTML = '<div style="text-align: center; opacity: 0.7;">No sensor data</div>';
+        return;
+      }
+
+      // Count sensors by type
+      const sensorCounts = {};
+      sensorData.sensors.forEach(sensor => {
+        const type = sensor.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        sensorCounts[type] = (sensorCounts[type] || 0) + 1;
+      });
+
+      const sensorTypes = Object.entries(sensorCounts).map(([type, count]) => ({
+        type: type,
+        count: count
+      }));
+
+      container.innerHTML = sensorTypes.map(sensor => `
+                <div class="sensor-item">
+                    <div style="font-weight: bold; color: #00ff88;">${sensor.count}</div>
+                    <div>${sensor.type}</div>
+                </div>
+            `).join('');
+    }
+
+    function updateInsights(insights) {
+      const container = document.getElementById('insights-list');
+
+      if (!insights || insights.length === 0) {
+        container.innerHTML = '<div style="text-align: center; opacity: 0.7;">No active insights</div>';
+        return;
+      }
+
+      container.innerHTML = insights.slice(0, 5).map(insight => `
+                <div class="insight-item insight-${insight.priority}">
+                    <div style="display: flex; justify-content: between; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <strong>${insight.title}</strong>
+                            <p style="margin: 5px 0; font-size: 0.9rem; opacity: 0.8;">
+                                ${insight.description}
+                            </p>
+                            <div style="font-size: 0.8rem; opacity: 0.6;">
+                                Confidence: ${Math.round(insight.confidence_score * 100)}%
+                            </div>
+                        </div>
+                        <span class="action-priority priority-${insight.priority}">
+                            ${insight.priority.toUpperCase()}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function updateOptimizations(optimizations) {
+      const container = document.getElementById('optimization-list');
+
+      if (!optimizations || optimizations.length === 0) {
+        container.innerHTML = '<div style="text-align: center; opacity: 0.7;">No active optimizations</div>';
+        return;
+      }
+
+      container.innerHTML = optimizations.map(opt => `
+                <div class="action-item">
+                    <div style="flex: 1;">
+                        <strong>${opt.description}</strong>
+                        <div style="font-size: 0.8rem; opacity: 0.8; margin-top: 5px;">
+                            Target: ${opt.target_systems?.join(', ') || 'Various systems'}
+                        </div>
+                        <div style="font-size: 0.8rem; opacity: 0.6;">
+                            ETA: ${opt.implementation_time_minutes || 0} minutes
+                        </div>
+                    </div>
+                    <span class="action-priority priority-${opt.priority}">
+                        ${opt.priority?.toUpperCase() || 'MEDIUM'}
+                    </span>
+                </div>
+            `).join('');
+    }
+
+    function updatePatterns(patterns) {
+      const container = document.getElementById('pattern-summary');
+
+      // Generate some default patterns if none provided
+      if (!patterns || patterns.length === 0) {
+        patterns = [
+          { pattern_type: 'energy_peak', confidence: 0.87 },
+          { pattern_type: 'traffic_flow', confidence: 0.92 },
+          { pattern_type: 'air_quality', confidence: 0.78 }
+        ];
+      }
+
+      const patternSummary = patterns.slice(0, 3).map(pattern => `
+                <div style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin: 5px 0;">
+                    <div style="font-size: 0.9rem; font-weight: bold;">
+                        ${pattern.pattern_type?.replace('_', ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || 'Pattern'}
+                    </div>
+                    <div style="font-size: 0.8rem; opacity: 0.8;">
+                        Confidence: ${Math.round((pattern.confidence || 0) * 100)}%
+                    </div>
+                </div>
+            `).join('');
+
+      container.innerHTML = patternSummary;
+    }
+
+    // Three.js 3D City Visualization
+    function initThreeJS() {
+      const canvas = document.getElementById('three-canvas');
+      const container = canvas.parentElement;
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0a0a1a);
+
+      camera = new THREE.PerspectiveCamera(
+        75,
+        container.clientWidth / container.clientHeight,
+        0.1,
+        1000
+      );
+
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      // Create city model
+      createCityModel();
+
+      // Add lights
+      const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+      scene.add(ambientLight);
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(10, 10, 5);
+      directionalLight.castShadow = true;
+      scene.add(directionalLight);
+
+      // Position camera
+      camera.position.set(15, 10, 15);
+      camera.lookAt(0, 0, 0);
+
+      // Add controls
+      addCameraControls();
+
+      // Start animation
+      animate();
+
+      // Handle resize
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function createCityModel() {
+      cityModel = new THREE.Group();
+
+      // Create buildings
+      const buildingGeometry = new THREE.BoxGeometry(1, 2, 1);
+      const buildingMaterials = [
+        new THREE.MeshLambertMaterial({ color: 0x4a90e2 }),
+        new THREE.MeshLambertMaterial({ color: 0x7ed321 }),
+        new THREE.MeshLambertMaterial({ color: 0xf5a623 }),
+        new THREE.MeshLambertMaterial({ color: 0xd0021b })
+      ];
+
+      // Grid of buildings
+      for (let x = -5; x <= 5; x += 2) {
+        for (let z = -5; z <= 5; z += 2) {
+          const height = Math.random() * 3 + 1;
+          const building = new THREE.Mesh(
+            new THREE.BoxGeometry(1, height, 1),
+            buildingMaterials[Math.floor(Math.random() * buildingMaterials.length)]
+          );
+          building.position.set(x, height / 2, z);
+          building.castShadow = true;
+          building.receiveShadow = true;
+          cityModel.add(building);
+        }
+      }
+
+      // Add ground
+      const groundGeometry = new THREE.PlaneGeometry(20, 20);
+      const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
+      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      cityModel.add(ground);
+
+      scene.add(cityModel);
+    }
+
+    function addCameraControls() {
+      let mouseX = 0, mouseY = 0;
+      let isMouseDown = false;
+
+      const canvas = renderer.domElement;
+
+      canvas.addEventListener('mousedown', () => { isMouseDown = true; });
+      canvas.addEventListener('mouseup', () => { isMouseDown = false; });
+      canvas.addEventListener('mousemove', (event) => {
+        if (!isMouseDown) return;
+
+        const deltaX = event.clientX - mouseX;
+        const deltaY = event.clientY - mouseY;
+
+        cityModel.rotation.y += deltaX * 0.01;
+        cityModel.rotation.x += deltaY * 0.01;
+
+        mouseX = event.clientX;
+        mouseY = event.clientY;
+      });
+
+      // Zoom with mouse wheel
+      canvas.addEventListener('wheel', (event) => {
+        camera.position.multiplyScalar(event.deltaY > 0 ? 1.1 : 0.9);
+      });
+    }
+
+    function animate() {
+      animationId = requestAnimationFrame(animate);
+
+      if (isAnimating) {
+        cityModel.rotation.y += 0.005;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    function toggleAnimation() {
+      isAnimating = !isAnimating;
+      const icon = document.getElementById('anim-icon');
+      icon.className = isAnimating ? 'fas fa-pause' : 'fas fa-play';
+    }
+
+    function resetCameraView() {
+      camera.position.set(15, 10, 15);
+      camera.lookAt(0, 0, 0);
+      cityModel.rotation.set(0, 0, 0);
+    }
+
+    function refreshCharts() {
+      console.log('Manual chart refresh requested');
+
+      // Destroy existing charts
+      Object.values(charts).forEach(chart => {
+        if (chart) chart.destroy();
+      });
+
+      // Reinitialize
+      charts = {};
+      initCharts();
+
+      // Update with current data
+      fetch('/api/city-stats')
+        .then(response => response.json())
+        .then(data => {
+          console.log('Refreshing charts with fresh data:', data);
+          updateChartsWithVitalSigns(data);
+        })
+        .catch(error => console.error('Error refreshing charts:', error));
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('three-canvas').parentElement;
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    // Chart initialization
+    function initCharts() {
+      console.log('Initializing charts...');
+
+      // Air Quality Chart
+      const airCtx = document.getElementById('air-quality-chart');
+      if (!airCtx) {
+        console.error('Air quality chart canvas not found!');
+        return;
+      }
+      const airContext = airCtx.getContext('2d');
+      const initialTimes = [];
+      const initialData = [];
+      for (let i = 9; i >= 0; i--) {
+        const time = new Date(Date.now() - i * 30000);
+        initialTimes.push(time.toLocaleTimeString());
+        initialData.push(Math.floor(Math.random() * 40) + 60);
+      }
+
+      charts.airQuality = new Chart(airContext, {
+        type: 'line',
+        data: {
+          labels: initialTimes,
+          datasets: [{
+            label: 'Air Quality (%)',
+            data: initialData,
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#00ff88',
+              bodyColor: '#ffffff'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              grid: { color: 'rgba(255,255,255,0.1)' },
+              ticks: { color: 'rgba(255,255,255,0.8)' }
+            },
+            x: {
+              grid: { color: 'rgba(255,255,255,0.1)' },
+              ticks: { color: 'rgba(255,255,255,0.8)' }
+            }
+          },
+          animation: {
+            duration: 750
+          }
+        }
+      });
+
+      // Energy Chart
+      const energyCanvas = document.getElementById('energy-chart');
+      if (!energyCanvas) {
+        console.error('Energy chart canvas not found!');
+        return;
+      }
+      const energyCtx = energyCanvas.getContext('2d');
+      charts.energy = new Chart(energyCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Consumption', 'Renewable', 'Efficiency'],
+          datasets: [{
+            label: 'Energy Metrics (%)',
+            data: [35, 45, 78],
+            backgroundColor: ['#ff4757', '#2ed573', '#3742fa']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#00ff88',
+              bodyColor: '#ffffff'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              grid: { color: 'rgba(255,255,255,0.1)' },
+              ticks: { color: 'rgba(255,255,255,0.8)' }
+            },
+            x: {
+              grid: { color: 'rgba(255,255,255,0.1)' },
+              ticks: { color: 'rgba(255,255,255,0.8)' }
+            }
+          },
+          animation: {
+            duration: 750
+          }
+        }
+      });
+
+      // Traffic Chart
+      const trafficCanvas = document.getElementById('traffic-chart');
+      if (!trafficCanvas) {
+        console.error('Traffic chart canvas not found!');
+        return;
+      }
+      const trafficCtx = trafficCanvas.getContext('2d');
+      charts.traffic = new Chart(trafficCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Smooth Flow', 'Congestion', 'Heavy Traffic'],
+          datasets: [{
+            data: [65, 25, 10],
+            backgroundColor: ['#2ed573', '#ffa502', '#ff4757']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: 'rgba(255,255,255,0.8)',
+                font: { size: 12 }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#00ff88',
+              bodyColor: '#ffffff'
+            }
+          },
+          animation: {
+            duration: 750
+          }
+        }
+      });
+
+      console.log('Charts initialized successfully:', Object.keys(charts));
+    }
+
+    function updateChartsWithVitalSigns(vitalSigns) {
+      console.log('Updating charts with data:', vitalSigns);
+
+      // Update Air Quality chart
+      const now = new Date().toLocaleTimeString();
+      if (charts.airQuality) {
+        console.log('Updating air quality chart');
+        charts.airQuality.data.labels.push(now);
+        charts.airQuality.data.datasets[0].data.push((vitalSigns.air_quality || 0) * 100);
+
+        // Keep only last 10 data points
+        if (charts.airQuality.data.labels.length > 10) {
+          charts.airQuality.data.labels.shift();
+          charts.airQuality.data.datasets[0].data.shift();
+        }
+        charts.airQuality.update();
+      } else {
+        console.error('Air quality chart not available');
+      }
+
+      // Update Energy chart
+      if (charts.energy) {
+        console.log('Updating energy chart');
+        const efficiency = (vitalSigns.energy_efficiency || 0) * 100;
+        charts.energy.data.datasets[0].data = [
+          100 - efficiency,  // Consumption (inverse of efficiency)
+          efficiency * 0.6,   // Renewable estimate
+          efficiency          // Efficiency
+        ];
+        charts.energy.update();
+      } else {
+        console.error('Energy chart not available');
+      }
+
+      // Update Traffic chart - use noise pollution as traffic proxy
+      if (charts.traffic) {
+        console.log('Updating traffic chart');
+        const noiseLevel = (vitalSigns.noise_pollution || 0) * 100;
+        const smoothFlow = Math.max(0, noiseLevel);
+        const congestion = Math.max(0, 100 - noiseLevel);
+        const optimal = Math.max(0, (noiseLevel - 70));
+
+        charts.traffic.data.datasets[0].data = [smoothFlow, congestion, optimal];
+        charts.traffic.update();
+      } else {
+        console.error('Traffic chart not available');
+      }
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.getElementById(tabName + '-content').classList.add('active');
+    }
+
+    // Update current time
+    function updateTime() {
+      document.getElementById('current-time').textContent = new Date().toLocaleString();
+    }
+
+    // Initialize everything
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('DOM loaded, initializing RegeneraX dashboard...');
+
+      // Wait for all resources to load
+      window.addEventListener('load', function () {
+        console.log('All resources loaded, initializing charts...');
+
+        // Initialize charts with a delay to ensure DOM is ready
+        setTimeout(() => {
+          initCharts();
+
+          // Force initial chart update with sample data
+          setTimeout(() => {
+            console.log('Forcing initial chart data...');
+            const sampleData = {
+              air_quality: 0.75,
+              energy_efficiency: 0.85,
+              noise_pollution: 0.70
+            };
+            updateChartsWithVitalSigns(sampleData);
+
+            // Start polling after charts are ready
+            startAPIPolling();
+          }, 1000);
+        }, 500);
+      });
+
+      initThreeJS();
+      updateTime();
+      setInterval(updateTime, 1000);
+    });
+  </script>
+</body>
+
+</html>

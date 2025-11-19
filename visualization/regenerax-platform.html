@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RegeneraX - Regenerative Urban Intelligence Platform</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    .platform-header {
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo i {
+      color: #00ff88;
+      font-size: 2rem;
+    }
+
+    .logo h1 {
+      color: #00ff88;
+      font-size: 1.8rem;
+    }
+
+    .logo p {
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+
+    .stage-indicator {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .stage {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 15px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      font-size: 0.8rem;
+    }
+
+    .stage.active {
+      background: rgba(0, 255, 136, 0.2);
+      border: 1px solid #00ff88;
+    }
+
+    .stage-icon {
+      width: 20px;
+      text-align: center;
+    }
+
+    .four-stage-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      height: calc(100vh - 80px);
+      gap: 2px;
+    }
+
+    .stage-panel {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 25px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stage-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--stage-color);
+    }
+
+    .stage1 {
+      --stage-color: #00ff88;
+    }
+
+    .stage2 {
+      --stage-color: #3742fa;
+    }
+
+    .stage3 {
+      --stage-color: #ffa502;
+    }
+
+    .stage4 {
+      --stage-color: #ff4757;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .panel-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    .stage1 .panel-icon {
+      background: #00ff88;
+      color: #0f0f23;
+    }
+
+    .stage2 .panel-icon {
+      background: #3742fa;
+    }
+
+    .stage3 .panel-icon {
+      background: #ffa502;
+    }
+
+    .stage4 .panel-icon {
+      background: #ff4757;
+    }
+
+    .panel-title {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--stage-color);
+    }
+
+    .panel-subtitle {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .data-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .data-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .data-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--stage-color);
+      margin: 8px 0;
+    }
+
+    .data-label {
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+
+    .data-source {
+      font-size: 0.7rem;
+      opacity: 0.6;
+      margin-top: 5px;
+    }
+
+    .ai-insights {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .insight-item {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 5px;
+    }
+
+    .insight-icon {
+      color: var(--stage-color);
+      margin-top: 2px;
+    }
+
+    .recommendations {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .recommendation {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px;
+      border-left: 4px solid var(--stage-color);
+    }
+
+    .rec-title {
+      font-weight: bold;
+      color: var(--stage-color);
+      margin-bottom: 5px;
+    }
+
+    .rec-desc {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .rec-impact {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+
+    .interface-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .interface-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .interface-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .interface-icon {
+      font-size: 2rem;
+      color: var(--stage-color);
+      margin-bottom: 10px;
+    }
+
+    .interface-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .interface-desc {
+      font-size: 0.8rem;
+      opacity: 0.8;
+    }
+
+    .chart-container {
+      height: 150px;
+      margin: 15px 0;
+    }
+
+    .stress-heatmap {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-interface {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+
+    .chat-message {
+      margin: 8px 0;
+      padding: 8px 12px;
+      border-radius: 15px;
+      max-width: 80%;
+    }
+
+    .chat-ai {
+      background: rgba(0, 255, 136, 0.2);
+      align-self: flex-start;
+    }
+
+    .chat-user {
+      background: rgba(255, 255, 255, 0.2);
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 8px 15px;
+      color: white;
+    }
+
+    .chat-input button {
+      background: #00ff88;
+      color: #0f0f23;
+      border: none;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      cursor: pointer;
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="platform-header">
+    <div class="logo">
+      <i class="fas fa-city pulse"></i>
+      <div>
+        <h1>RegeneraX</h1>
+        <p>Regenerative Urban Intelligence Platform</p>
+      </div>
+    </div>
+    <div class="stage-indicator">
+      <div class="stage active">
+        <div class="stage-icon">📡</div>
+        <span>Sensing</span>
+      </div>
+      <div class="stage active">
+        <div class="stage-icon">🧠</div>
+        <span>Decoding</span>
+      </div>
+      <div class="stage active">
+        <div class="stage-icon">🔮</div>
+        <span>Predicting</span>
+      </div>
+      <div class="stage active">
+        <div class="stage-icon">🌱</div>
+        <span>Healing</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="four-stage-container">
+    <!-- Stage 1: Sense the City -->
+    <div class="stage-panel stage1">
+      <div class="panel-header">
+        <div class="panel-icon">📡</div>
+        <div>
+          <div class="panel-title">1️⃣ Sense the City</div>
+          <div class="panel-subtitle">Real-Time Urban Awareness Layer</div>
+        </div>
+      </div>
+
+      <div class="data-grid" id="sensing-data">
+        <div class="data-card">
+          <div class="data-value" id="temp-value">24°C</div>
+          <div class="data-label">Temperature</div>
+          <div class="data-source">OpenWeather API</div>
+        </div>
+        <div class="data-card">
+          <div class="data-value" id="aqi-value">78</div>
+          <div class="data-label">Air Quality</div>
+          <div class="data-source">WAQI API</div>
+        </div>
+        <div class="data-card">
+          <div class="data-value" id="energy-value">85%</div>
+          <div class="data-label">Energy Load</div>
+          <div class="data-source">Smart Grid</div>
+        </div>
+        <div class="data-card">
+          <div class="data-value" id="traffic-value">67%</div>
+          <div class="data-label">Traffic Flow</div>
+          <div class="data-source">TomTom API</div>
+        </div>
+        <div class="data-card">
+          <div class="data-value" id="water-value">92%</div>
+          <div class="data-label">Water Level</div>
+          <div class="data-source">Hydrology API</div>
+        </div>
+        <div class="data-card">
+          <div class="data-value" id="carbon-value">420ppm</div>
+          <div class="data-label">CO2 Level</div>
+          <div class="data-source">NASA API</div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="sensing-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Stage 2: Decode the City -->
+    <div class="stage-panel stage2">
+      <div class="panel-header">
+        <div class="panel-icon">🧠</div>
+        <div>
+          <div class="panel-title">2️⃣ Decode the City</div>
+          <div class="panel-subtitle">AI & Simulation Intelligence</div>
+        </div>
+      </div>
+
+      <div class="ai-insights" id="ai-insights">
+        <div class="insight-item">
+          <div class="insight-icon">🔥</div>
+          <div>
+            <strong>Heat Island Detected:</strong> School district showing 3°C elevation.
+            EnergyPlus simulation identifies trapped heat around concrete structures.
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-icon">💨</div>
+          <div>
+            <strong>Pollution Corridor:</strong> LCA analysis shows PM2.5 concentration
+            along main traffic route affecting residential zones.
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-icon">🔋</div>
+          <div>
+            <strong>Energy Stress:</strong> Commercial buildings consuming 40% above
+            baseline. Digital Twin predicts grid stress by 2PM.
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-icon">💧</div>
+          <div>
+            <strong>Water Risk:</strong> Climate AI predicts 85% flood probability
+            in low-lying areas during next heavy rainfall.
+          </div>
+        </div>
+      </div>
+
+      <div class="stress-heatmap">
+        <i class="fas fa-fire" style="font-size: 3rem; color: #ff4757; margin-bottom: 10px;"></i>
+        <div style="text-align: center;">
+          <strong>City Stress Heatmap</strong>
+          <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">
+            AI analyzing 15,000+ data points
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 3: Predict & Recommend -->
+    <div class="stage-panel stage3">
+      <div class="panel-header">
+        <div class="panel-icon">🔮</div>
+        <div>
+          <div class="panel-title">3️⃣ Predict & Recommend</div>
+          <div class="panel-subtitle">Regenerative Intelligence Layer</div>
+        </div>
+      </div>
+
+      <div class="recommendations" id="recommendations">
+        <div class="recommendation">
+          <div class="rec-title">🌿 Rooftop Gardens for School District</div>
+          <div class="rec-desc">Install 2,500m² green roofs to reduce heat island effect by 3°C</div>
+          <div class="rec-impact">Impact: -15% cooling costs, +25% air quality</div>
+        </div>
+        <div class="recommendation">
+          <div class="rec-title">🌳 Living Buffer Walls</div>
+          <div class="rec-desc">Deploy vertical forests along pollution corridor</div>
+          <div class="rec-impact">Impact: -40% PM2.5, +30% biodiversity index</div>
+        </div>
+        <div class="recommendation">
+          <div class="rec-title">☀️ Solar Façade Integration</div>
+          <div class="rec-desc">Retrofit commercial buildings with energy-generating surfaces</div>
+          <div class="rec-impact">Impact: -60% grid dependency, +45% energy generation</div>
+        </div>
+        <div class="recommendation">
+          <div class="rec-title">🌊 Permeable Surface Network</div>
+          <div class="rec-desc">Replace concrete with bio-permeable materials in flood zones</div>
+          <div class="rec-impact">Impact: -70% flood risk, +80% groundwater recharge</div>
+        </div>
+        <div class="recommendation">
+          <div class="rec-title">🍃 Passive Cooling Corridors</div>
+          <div class="rec-desc">Create wind tunnels using strategic building placement</div>
+          <div class="rec-impact">Impact: -20% AC usage, +35% natural ventilation</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 4: Interactive Interfaces -->
+    <div class="stage-panel stage4">
+      <div class="panel-header">
+        <div class="panel-icon">🌱</div>
+        <div>
+          <div class="panel-title">4️⃣ Heal & Interact</div>
+          <div class="panel-subtitle">Regenerative Interface Layer</div>
+        </div>
+      </div>
+
+      <div class="interface-grid">
+        <div class="interface-card" onclick="activateVoice()">
+          <div class="interface-icon">🔊</div>
+          <div class="interface-name">Voice Assistant</div>
+          <div class="interface-desc">Ask regenerative questions</div>
+        </div>
+        <div class="interface-card" onclick="openVR()">
+          <div class="interface-icon">🥽</div>
+          <div class="interface-name">VR Simulation</div>
+          <div class="interface-desc">Walk future green city</div>
+        </div>
+        <div class="interface-card" onclick="generateReport()">
+          <div class="interface-icon">📊</div>
+          <div class="interface-name">Green Reports</div>
+          <div class="interface-desc">Auto-design proposals</div>
+        </div>
+        <div class="interface-card" onclick="openDashboard()">
+          <div class="interface-icon">🗺️</div>
+          <div class="interface-name">Live Dashboard</div>
+          <div class="interface-desc">Interactive heatmaps</div>
+        </div>
+      </div>
+
+      <div class="chat-interface">
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-message chat-ai">
+            👋 Hi! I'm your Regenerative AI. Ask me: "How to reduce heat stress in Sector 7?"
+          </div>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="chat-input" placeholder="Ask about regenerative design..." />
+          <button onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let charts = {};
+    let cityData = {};
+
+    // Initialize the platform
+    async function initRegeneraX() {
+      console.log('🌱 Initializing RegeneraX Platform...');
+
+      // Load initial data
+      await loadCityData();
+
+      // Initialize sensing chart
+      initSensingChart();
+
+      // Start real-time updates
+      setInterval(updateSensingData, 5000);
+
+      // Add some dynamic effects
+      addDynamicEffects();
+    }
+
+    async function loadCityData() {
+      try {
+        const response = await fetch('/api/city-stats');
+        cityData = await response.json();
+        console.log('City data loaded:', cityData);
+        updateSensingValues();
+      } catch (error) {
+        console.error('Error loading city data:', error);
+        // Use simulated data
+        cityData = {
+          air_quality: 0.78,
+          energy_efficiency: 0.85,
+          water_efficiency: 0.92,
+          noise_pollution: 0.67,
+          carbon_footprint: 0.58,
+          biodiversity_index: 0.73
+        };
+        updateSensingValues();
+      }
+    }
+
+    function updateSensingValues() {
+      // Update sensing data cards with real values
+      document.getElementById('temp-value').textContent = Math.round(15 + Math.random() * 20) + '°C';
+      document.getElementById('aqi-value').textContent = Math.round(cityData.air_quality * 100);
+      document.getElementById('energy-value').textContent = Math.round(cityData.energy_efficiency * 100) + '%';
+      document.getElementById('traffic-value').textContent = Math.round(cityData.noise_pollution * 100) + '%';
+      document.getElementById('water-value').textContent = Math.round(cityData.water_efficiency * 100) + '%';
+      document.getElementById('carbon-value').textContent = Math.round(380 + cityData.carbon_footprint * 80) + 'ppm';
+    }
+
+    function initSensingChart() {
+      const ctx = document.getElementById('sensing-chart').getContext('2d');
+
+      charts.sensing = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Air Quality', 'Energy', 'Water', 'Traffic', 'Carbon', 'Bio'],
+          datasets: [{
+            label: 'Current Status',
+            data: [78, 85, 92, 67, 58, 73],
+            backgroundColor: 'rgba(0, 255, 136, 0.2)',
+            borderColor: '#00ff88',
+            borderWidth: 2,
+            pointBackgroundColor: '#00ff88'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 100,
+              ticks: { color: 'rgba(255,255,255,0.6)' },
+              grid: { color: 'rgba(255,255,255,0.1)' },
+              pointLabels: { color: 'rgba(255,255,255,0.8)' }
+            }
+          }
+        }
+      });
+    }
+
+    function updateSensingData() {
+      // Add slight variations to simulate real-time data
+      const data = [
+        Math.round(cityData.air_quality * 100) + Math.random() * 10 - 5,
+        Math.round(cityData.energy_efficiency * 100) + Math.random() * 10 - 5,
+        Math.round(cityData.water_efficiency * 100) + Math.random() * 10 - 5,
+        Math.round(cityData.noise_pollution * 100) + Math.random() * 10 - 5,
+        Math.round(cityData.carbon_footprint * 100) + Math.random() * 10 - 5,
+        Math.round(cityData.biodiversity_index * 100) + Math.random() * 10 - 5
+      ];
+
+      if (charts.sensing) {
+        charts.sensing.data.datasets[0].data = data;
+        charts.sensing.update();
+      }
+
+      updateSensingValues();
+    }
+
+    function addDynamicEffects() {
+      // Add floating effect to some elements
+      const floatingElements = document.querySelectorAll('.data-card');
+      floatingElements.forEach((el, index) => {
+        setTimeout(() => {
+          el.classList.add('floating');
+        }, index * 200);
+      });
+    }
+
+    // Chat functionality
+    function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+
+      if (!message) return;
+
+      // Add user message
+      addChatMessage(message, 'user');
+      input.value = '';
+
+      // Simulate AI response
+      setTimeout(() => {
+        const response = generateAIResponse(message);
+        addChatMessage(response, 'ai');
+      }, 1000);
+    }
+
+    function addChatMessage(message, sender) {
+      const messagesContainer = document.getElementById('chat-messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `chat-message chat-${sender}`;
+      messageDiv.textContent = sender === 'ai' ? '🤖 ' + message : message;
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function generateAIResponse(message) {
+      const responses = {
+        'heat': '🌿 For heat reduction: Install reflective green roofs (30% cooling), create shade corridors with native trees, and use phase-change materials in facades for thermal regulation.',
+        'pollution': '🍃 Air quality solutions: Deploy living walls along traffic routes, implement car-free green zones, and use photocatalytic building materials that break down pollutants.',
+        'energy': '☀️ Energy regeneration: Install solar canopies over parking, use building-integrated photovoltaics, and create micro-wind corridors between structures.',
+        'water': '🌊 Water management: Design permeable landscapes, install rainwater harvesting systems, and create bioswales for natural filtration.',
+        'design': '🏗️ Regenerative design principles: Biomimicry in structure, passive solar orientation, natural ventilation systems, and materials that improve with age.',
+        'default': '🌱 I can help with heat reduction, pollution control, energy generation, water management, and regenerative design strategies. What specific challenge are you facing?'
+      };
+
+      const lowerMessage = message.toLowerCase();
+      for (const [key, response] of Object.entries(responses)) {
+        if (lowerMessage.includes(key)) {
+          return response;
+        }
+      }
+      return responses.default;
+    }
+
+    // Interface actions
+    function activateVoice() {
+      addChatMessage('🎤 Voice Assistant Activated! You can now ask: "How to make buildings net-positive energy?"', 'ai');
+    }
+
+    function openVR() {
+      addChatMessage('🥽 VR Simulation loading... Experience walking through a future regenerative city with living buildings and carbon-negative districts!', 'ai');
+    }
+
+    function generateReport() {
+      addChatMessage('📊 Generating Green Design Report... Creating proposal for 40% energy reduction and 60% carbon negativity using regenerative architecture principles.', 'ai');
+    }
+
+    function openDashboard() {
+      window.open('/simple-dashboard.html', '_blank');
+    }
+
+    // Handle enter key in chat
+    document.getElementById('chat-input').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    // Initialize when page loads
+    window.addEventListener('load', function () {
+      setTimeout(initRegeneraX, 500);
+    });
+  </script>
+</body>
+
+</html>

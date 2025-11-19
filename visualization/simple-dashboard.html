@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>RegeneraX - Simple Charts</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      color: white;
+      font-family: Arial;
+      padding: 20px;
+    }
+
+    .chart-container {
+      width: 400px;
+      height: 300px;
+      margin: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 20px;
+      display: inline-block;
+    }
+
+    h1,
+    h2 {
+      color: #00ff88;
+    }
+
+    .refresh-btn {
+      background: #00ff88;
+      color: #0f0f23;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🌱 RegeneraX Charts Test</h1>
+  <button class="refresh-btn" onclick="loadData()">🔄 Refresh Data</button>
+
+  <div class="chart-container">
+    <h2>Air Quality</h2>
+    <canvas id="air-chart"></canvas>
+  </div>
+
+  <div class="chart-container">
+    <h2>Energy Patterns</h2>
+    <canvas id="energy-chart"></canvas>
+  </div>
+
+  <div class="chart-container">
+    <h2>Traffic Flow</h2>
+    <canvas id="traffic-chart"></canvas>
+  </div>
+
+  <script>
+    let charts = {};
+
+    function createCharts() {
+      console.log('Creating simple charts...');
+
+      // Air Quality Chart
+      const airCtx = document.getElementById('air-chart').getContext('2d');
+      charts.air = new Chart(airCtx, {
+        type: 'line',
+        data: {
+          labels: ['9:00', '9:30', '10:00', '10:30', '11:00'],
+          datasets: [{
+            label: 'Air Quality %',
+            data: [65, 70, 75, 80, 85],
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0, 255, 136, 0.2)',
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: { color: 'white' },
+              grid: { color: 'rgba(255,255,255,0.1)' }
+            },
+            x: {
+              ticks: { color: 'white' },
+              grid: { color: 'rgba(255,255,255,0.1)' }
+            }
+          },
+          plugins: {
+            legend: { labels: { color: 'white' } }
+          }
+        }
+      });
+
+      // Energy Chart
+      const energyCtx = document.getElementById('energy-chart').getContext('2d');
+      charts.energy = new Chart(energyCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Usage', 'Renewable', 'Efficiency'],
+          datasets: [{
+            data: [45, 65, 80],
+            backgroundColor: ['#ff4757', '#2ed573', '#3742fa']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { color: 'white' },
+              grid: { color: 'rgba(255,255,255,0.1)' }
+            },
+            x: {
+              ticks: { color: 'white' },
+              grid: { color: 'rgba(255,255,255,0.1)' }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      // Traffic Chart
+      const trafficCtx = document.getElementById('traffic-chart').getContext('2d');
+      charts.traffic = new Chart(trafficCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Smooth', 'Congested', 'Heavy'],
+          datasets: [{
+            data: [60, 30, 10],
+            backgroundColor: ['#2ed573', '#ffa502', '#ff4757']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: 'white' }
+            }
+          }
+        }
+      });
+
+      console.log('Charts created successfully!');
+    }
+
+    async function loadData() {
+      console.log('Loading live data...');
+      try {
+        const response = await fetch('/api/city-stats');
+        const data = await response.json();
+        console.log('Got data:', data);
+
+        // Update air quality with real data
+        if (charts.air) {
+          const now = new Date().toLocaleTimeString();
+          charts.air.data.labels.push(now);
+          charts.air.data.datasets[0].data.push(data.air_quality * 100);
+
+          if (charts.air.data.labels.length > 10) {
+            charts.air.data.labels.shift();
+            charts.air.data.datasets[0].data.shift();
+          }
+          charts.air.update();
+        }
+
+        // Update energy with real data
+        if (charts.energy) {
+          const efficiency = data.energy_efficiency * 100;
+          charts.energy.data.datasets[0].data = [
+            100 - efficiency,
+            efficiency * 0.7,
+            efficiency
+          ];
+          charts.energy.update();
+        }
+
+        // Update traffic with real data
+        if (charts.traffic) {
+          const noise = data.noise_pollution * 100;
+          charts.traffic.data.datasets[0].data = [
+            noise,
+            100 - noise,
+            Math.max(0, noise - 60)
+          ];
+          charts.traffic.update();
+        }
+
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', function () {
+      setTimeout(() => {
+        createCharts();
+        loadData();
+        setInterval(loadData, 5000); // Auto-refresh every 5 seconds
+      }, 500);
+    });
+  </script>
+</body>
+
+</html>

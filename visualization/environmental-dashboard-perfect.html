@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RegeneraX - Real-Time Environmental Intelligence</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .metric-card {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      transition: all 0.3s ease;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .metric-card.excellent {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .metric-card.good {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+
+    .metric-card.warning {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .metric-card.critical {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .weather-card {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(6, 182, 212, 0.3);
+    }
+
+    .sensor-card {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      transition: all 0.3s ease;
+    }
+
+    .sensor-card:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    .recommendation-card {
+      background: white;
+      border-radius: 16px;
+      border-left: 4px solid #3b82f6;
+      transition: all 0.3s ease;
+    }
+
+    .recommendation-card.high-priority {
+      border-left-color: #ef4444;
+    }
+
+    .recommendation-card.medium-priority {
+      border-left-color: #f59e0b;
+    }
+
+    .recommendation-card.low-priority {
+      border-left-color: #10b981;
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    .status-online {
+      background-color: #10b981;
+    }
+
+    .status-warning {
+      background-color: #f59e0b;
+    }
+
+    .status-critical {
+      background-color: #ef4444;
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .chart-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .loading-shimmer {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    .icon-3d {
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+      font-size: 2.5rem;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center">
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <i class="fas fa-leaf text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                RegeneraX</h1>
+              <p class="text-xs text-gray-500">Environmental Intelligence Platform</p>
+            </div>
+          </div>
+          <span class="ml-4 px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+            <i class="fas fa-circle text-green-500 text-xs mr-1 pulse"></i>
+            LIVE
+          </span>
+          <!-- City Selector -->
+          <div class="ml-6 relative">
+            <select id="citySelector"
+              class="appearance-none bg-white/90 backdrop-blur-sm border-2 border-blue-200 text-gray-700 py-2 px-4 pr-8 rounded-lg text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer">
+              <option value="new-york">🏙️ New York, USA</option>
+              <option value="london">🇬🇧 London, UK</option>
+              <option value="tokyo">🇯🇵 Tokyo, Japan</option>
+              <option value="singapore">🇸🇬 Singapore</option>
+              <option value="sydney">🇦🇺 Sydney, Australia</option>
+              <option value="copenhagen">🇩🇰 Copenhagen, Denmark</option>
+              <option value="vancouver">🇨🇦 Vancouver, Canada</option>
+              <option value="amsterdam">🇳🇱 Amsterdam, Netherlands</option>
+              <option value="berlin">🇩🇪 Berlin, Germany</option>
+              <option value="stockholm">🇸🇪 Stockholm, Sweden</option>
+              <option value="mumbai">🇮🇳 Mumbai, India</option>
+              <option value="delhi">🇮🇳 Delhi, India</option>
+              <option value="bangalore">🇮🇳 Bangalore, India</option>
+              <option value="dubai">🇦🇪 Dubai, UAE</option>
+              <option value="seoul">🇰🇷 Seoul, South Korea</option>
+              <option value="hong-kong">🇭🇰 Hong Kong</option>
+              <option value="zurich">🇨🇭 Zurich, Switzerland</option>
+              <option value="oslo">🇳🇴 Oslo, Norway</option>
+              <option value="reykjavik">🇮🇸 Reykjavik, Iceland</option>
+              <option value="cape-town">🇿🇦 Cape Town, South Africa</option>
+              <option value="sao-paulo">🇧🇷 São Paulo, Brazil</option>
+              <option value="mexico-city">🇲🇽 Mexico City, Mexico</option>
+              <option value="cairo">🇪🇬 Cairo, Egypt</option>
+              <option value="istanbul">🇹🇷 Istanbul, Turkey</option>
+              <option value="moscow">🇷🇺 Moscow, Russia</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+              <i class="fas fa-chevron-down text-xs"></i>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center space-x-6">
+          <!-- AI Consultant Link -->
+          <a href="ai-consultant.html"
+            class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105">
+            <i class="fas fa-robot"></i>
+            <span class="font-medium">AI Consultant</span>
+          </a>
+          <div class="text-right">
+            <div class="text-sm font-medium text-gray-900">
+              <i class="far fa-clock mr-1"></i>
+              <span id="currentTime">--:--:--</span>
+            </div>
+            <div class="text-xs text-gray-500">
+              Last Updated: <span id="lastUpdated">--</span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <div class="status-indicator status-online pulse"></div>
+            <span class="text-sm font-medium text-gray-700">System Active</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Weather Overview -->
+    <div class="weather-card p-8 text-white">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold flex items-center">
+          <i class="fas fa-cloud-sun icon-3d mr-3"></i>
+          Current Weather Conditions
+        </h2>
+        <div class="text-right">
+          <div class="text-sm opacity-80" id="weatherLocation">New York City</div>
+          <div class="text-xs opacity-60" id="weatherTime">--</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="text-center p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+          <i class="fas fa-thermometer-half icon-3d mb-3 text-orange-300"></i>
+          <div class="text-3xl font-bold mb-1" id="temperature">--°C</div>
+          <div class="text-sm opacity-80">Temperature</div>
+          <div class="text-xs opacity-60 mt-1" id="feelsLike">Feels like --°C</div>
+        </div>
+        <div class="text-center p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+          <i class="fas fa-tint icon-3d mb-3 text-blue-300"></i>
+          <div class="text-3xl font-bold mb-1" id="humidity">--%</div>
+          <div class="text-sm opacity-80">Humidity</div>
+          <div class="text-xs opacity-60 mt-1" id="dewPoint">Dew Point --°C</div>
+        </div>
+        <div class="text-center p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+          <i class="fas fa-wind icon-3d mb-3 text-gray-300"></i>
+          <div class="text-3xl font-bold mb-1" id="windSpeed">-- m/s</div>
+          <div class="text-sm opacity-80">Wind Speed</div>
+          <div class="text-xs opacity-60 mt-1">Direction: <span id="windDirection">--°</span></div>
+        </div>
+        <div class="text-center p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+          <i class="fas fa-eye icon-3d mb-3 text-purple-300"></i>
+          <div class="text-3xl font-bold mb-1" id="visibility">-- km</div>
+          <div class="text-sm opacity-80">Visibility</div>
+          <div class="text-xs opacity-60 mt-1">UV Index: <span id="uvIndex">--</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Environmental Metrics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Air Quality -->
+      <div class="metric-card p-6 text-white" id="airQualityCard">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold">Air Quality Index</h3>
+          <i class="fas fa-wind icon-3d"></i>
+        </div>
+        <div class="text-4xl font-bold mb-2" id="airQualityScore">--</div>
+        <div class="text-sm opacity-90 mb-4" id="airQualityStatus">Calculating...</div>
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs opacity-75">
+            <span>PM2.5:</span>
+            <span id="pm25Level">-- μg/m³</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>NO2:</span>
+            <span id="no2Level">-- μg/m³</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Health Risk:</span>
+            <span id="healthRisk">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Climate Comfort -->
+      <div class="metric-card p-6 text-white" id="comfortCard">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold">Climate Comfort</h3>
+          <i class="fas fa-thermometer-three-quarters icon-3d"></i>
+        </div>
+        <div class="text-4xl font-bold mb-2" id="comfortScore">--</div>
+        <div class="text-sm opacity-90 mb-4" id="comfortStatus">Calculating...</div>
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Heat Index:</span>
+            <span id="heatIndex">--°C</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Thermal Stress:</span>
+            <span id="thermalStress">--</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Pressure:</span>
+            <span id="pressure">-- hPa</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Energy Efficiency -->
+      <div class="metric-card p-6 text-white" id="energyCard">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold">Energy Efficiency</h3>
+          <i class="fas fa-bolt icon-3d"></i>
+        </div>
+        <div class="text-4xl font-bold mb-2" id="energyScore">--</div>
+        <div class="text-sm opacity-90 mb-4" id="energyTrend">Calculating...</div>
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Consumption:</span>
+            <span id="avgConsumption">-- kWh</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Solar Generation:</span>
+            <span id="solarGeneration">-- kWh</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Grid Efficiency:</span>
+            <span id="gridEfficiency">--%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Water Quality -->
+      <div class="metric-card p-6 text-white" id="waterCard">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold">Water Systems</h3>
+          <i class="fas fa-tint icon-3d"></i>
+        </div>
+        <div class="text-4xl font-bold mb-2" id="waterQuality">--</div>
+        <div class="text-sm opacity-90 mb-4" id="waterStatus">Calculating...</div>
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Quality Index:</span>
+            <span id="waterQualityIndex">--%</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Usage Efficiency:</span>
+            <span id="waterEfficiency">--%</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Contamination Risk:</span>
+            <span id="contaminationRisk">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Biodiversity -->
+      <div class="metric-card p-6 text-white" id="biodiversityCard">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold">Ecosystem Health</h3>
+          <i class="fas fa-seedling icon-3d"></i>
+        </div>
+        <div class="text-4xl font-bold mb-2" id="biodiversityScore">--</div>
+        <div class="text-sm opacity-90 mb-4" id="biodiversityStatus">Calculating...</div>
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Species Diversity:</span>
+            <span id="speciesDiversity">--%</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Vegetation Health:</span>
+            <span id="vegetationHealth">--%</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Habitat Connectivity:</span>
+            <span id="habitatConnectivity">--%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carbon Impact -->
+      <div class="metric-card p-6 text-white" id="carbonCard">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold">Carbon Impact</h3>
+          <i class="fas fa-leaf icon-3d"></i>
+        </div>
+        <div class="text-4xl font-bold mb-2" id="carbonScore">--</div>
+        <div class="text-sm opacity-90 mb-4" id="carbonStatus">Calculating...</div>
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs opacity-75">
+            <span>CO2 Equivalent:</span>
+            <span id="co2Equivalent">-- ppm</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Carbon Intensity:</span>
+            <span id="carbonIntensity">--</span>
+          </div>
+          <div class="flex justify-between text-xs opacity-75">
+            <span>Sequestration:</span>
+            <span id="carbonSequestration">-- tons/year</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IoT Sensors Network -->
+    <div class="chart-container p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-900 flex items-center">
+          <i class="fas fa-network-wired text-blue-500 mr-3"></i>
+          IoT Sensor Network Status
+        </h2>
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center">
+            <span class="status-indicator status-online"></span>
+            <span class="text-sm text-gray-600">Online</span>
+          </div>
+          <div class="flex items-center">
+            <span class="status-indicator status-warning"></span>
+            <span class="text-sm text-gray-600">Warning</span>
+          </div>
+          <div class="flex items-center">
+            <span class="status-indicator status-critical"></span>
+            <span class="text-sm text-gray-600">Critical</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="sensorGrid">
+        <!-- Sensors will be populated here -->
+        <div class="sensor-card p-4 loading-shimmer">
+          <div class="h-4 bg-gray-200 rounded mb-2"></div>
+          <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Climate Recommendations -->
+    <div class="chart-container p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-900 flex items-center">
+          <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>
+          Climate-Responsive Design Recommendations
+        </h2>
+        <div class="text-sm text-gray-500">
+          AI-Generated • Updated <span id="recommendationsUpdated">now</span>
+        </div>
+      </div>
+      <div id="recommendationsContainer" class="space-y-4">
+        <div class="loading-shimmer h-32 rounded-lg"></div>
+      </div>
+    </div>
+
+    <!-- Environmental Trends Chart -->
+    <div class="chart-container p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-900 flex items-center">
+          <i class="fas fa-chart-line text-green-500 mr-3"></i>
+          Environmental Trends (Live)
+        </h2>
+        <div class="flex space-x-2">
+          <button class="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full" onclick="setTimeRange(1)">1H</button>
+          <button class="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-full" onclick="setTimeRange(6)">6H</button>
+          <button class="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-full"
+            onclick="setTimeRange(24)">24H</button>
+        </div>
+      </div>
+      <div class="h-96">
+        <canvas id="environmentalChart"></canvas>
+      </div>
+    </div>
+  </main>
+
+  <!-- AI Consultant Section -->
+  <section class="bg-gradient-to-r from-purple-600 via-blue-600 to-green-600 py-16 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center text-white">
+        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i class="fas fa-robot text-3xl"></i>
+        </div>
+        <h2 class="text-4xl font-bold mb-4">AI Regenerative Design Consultant</h2>
+        <p class="text-xl mb-8 max-w-3xl mx-auto opacity-90">
+          Get intelligent regenerative architecture recommendations powered by advanced AI.
+          Transform your building projects into ecosystem-positive designs that enhance biodiversity,
+          sequester carbon, and create net-positive environmental impact.
+        </p>
+        <div class="grid md:grid-cols-3 gap-8 mb-12">
+          <div class="text-center">
+            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-brain text-xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold mb-2">Advanced AI Analysis</h3>
+            <p class="text-white/80 text-sm">
+              Comprehensive ecosystem impact analysis and regenerative design optimization
+            </p>
+          </div>
+          <div class="text-center">
+            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-seedling text-xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold mb-2">Ecosystem Integration</h3>
+            <p class="text-white/80 text-sm">
+              Designs that enhance biodiversity, water cycles, and carbon sequestration
+            </p>
+          </div>
+          <div class="text-center">
+            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-chart-line text-xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold mb-2">Impact Measurement</h3>
+            <p class="text-white/80 text-sm">
+              Quantified environmental benefits and performance metrics
+            </p>
+          </div>
+        </div>
+        <a href="ai-consultant.html"
+          class="inline-flex items-center space-x-3 bg-white text-purple-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-300 shadow-2xl hover:shadow-3xl transform hover:scale-105">
+          <i class="fas fa-comments text-xl"></i>
+          <span>Start AI Consultation</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Floating AI Consultant Button -->
+  <div class="fixed bottom-6 right-6 z-50">
+    <a href="ai-consultant.html"
+      class="bg-gradient-to-r from-purple-600 to-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 pulse">
+      <i class="fas fa-robot text-xl"></i>
+    </a>
+    <div class="absolute -top-2 -left-2 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center">
+      <i class="fas fa-sparkles text-white text-xs"></i>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white/50 backdrop-blur-md border-t border-gray-200 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex justify-between items-center">
+        <div class="text-sm text-gray-500">
+          © 2025 RegeneraX Environmental Intelligence Platform
+        </div>
+        <div class="flex space-x-4 text-sm text-gray-500">
+          <span>Data Sources: IoT Sensors, Weather APIs</span>
+          <span>•</span>
+          <span>Update Frequency: 30 seconds</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let environmentalChart;
+    let currentTimeRange = 1; // hours
+    let dataUpdateInterval;
+
+    let currentCity = 'new-york';
+
+    // Initialize the dashboard
+    document.addEventListener('DOMContentLoaded', function () {
+      initializeChart();
+      setupCitySelector();
+      startRealTimeUpdates();
+      updateCurrentTime();
+      setInterval(updateCurrentTime, 1000);
+    });
+
+    function setupCitySelector() {
+      const citySelector = document.getElementById('citySelector');
+      citySelector.addEventListener('change', function () {
+        currentCity = this.value;
+        // Clear existing interval
+        if (dataUpdateInterval) {
+          clearInterval(dataUpdateInterval);
+        }
+        // Show loading state
+        showLoadingState();
+        // Fetch data for new city
+        fetchAllData(currentCity);
+        // Restart interval with new city
+        dataUpdateInterval = setInterval(() => fetchAllData(currentCity), 30000);
+      });
+    }
+
+    function showLoadingState() {
+      const loadingElements = [
+        'airQualityScore', 'comfortScore', 'biodiversityScore', 'carbonIntensity',
+        'energyEfficiency', 'waterUsage', 'temperature', 'humidity'
+      ];
+      loadingElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = '...';
+      });
+    }
+
+    function updateCurrentTime() {
+      document.getElementById('currentTime').textContent = new Date().toLocaleTimeString();
+    }
+
+    function initializeChart() {
+      const ctx = document.getElementById('environmentalChart').getContext('2d');
+      environmentalChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Temperature (°C)',
+              data: [],
+              borderColor: '#ef4444',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              tension: 0.4,
+              pointRadius: 3,
+              pointBackgroundColor: '#ef4444'
+            },
+            {
+              label: 'Air Quality Index',
+              data: [],
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+              pointRadius: 3,
+              pointBackgroundColor: '#10b981'
+            },
+            {
+              label: 'Humidity (%)',
+              data: [],
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              pointRadius: 3,
+              pointBackgroundColor: '#3b82f6'
+            },
+            {
+              label: 'Energy Efficiency (%)',
+              data: [],
+              borderColor: '#8b5cf6',
+              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+              tension: 0.4,
+              pointRadius: 3,
+              pointBackgroundColor: '#8b5cf6'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 20
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0,0,0,0.1)'
+              }
+            },
+            x: {
+              grid: {
+                color: 'rgba(0,0,0,0.1)'
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          }
+        }
+      });
+    }
+
+    function startRealTimeUpdates() {
+      fetchAllData(currentCity);
+      dataUpdateInterval = setInterval(() => fetchAllData(currentCity), 30000); // Update every 30 seconds
+    }
+
+    async function fetchAllData(city = 'new-york') {
+      console.log(`Fetching data for city: ${city}`); // Debug log
+      try {
+        const [weatherResponse, metricsResponse, sensorsResponse, recommendationsResponse] = await Promise.all([
+          fetch(`http://localhost:8000/api/weather-data?city=${city}`),
+          fetch(`http://localhost:8000/api/environmental-metrics?city=${city}`),
+          fetch(`http://localhost:8000/api/iot-sensors?city=${city}`),
+          fetch(`http://localhost:8000/api/climate-recommendations?city=${city}`)
+        ]);
+
+        console.log('API responses received');
+
+        // Check if responses are OK
+        if (!weatherResponse.ok) throw new Error(`Weather API error: ${weatherResponse.status}`);
+        if (!metricsResponse.ok) throw new Error(`Metrics API error: ${metricsResponse.status}`);
+        if (!sensorsResponse.ok) throw new Error(`Sensors API error: ${sensorsResponse.status}`);
+        if (!recommendationsResponse.ok) throw new Error(`Recommendations API error: ${recommendationsResponse.status}`);
+
+        const weatherData = await weatherResponse.json();
+        const metricsData = await metricsResponse.json();
+        const sensorsData = await sensorsResponse.json();
+        const recommendationsData = await recommendationsResponse.json();
+
+        console.log('Data parsed successfully');
+
+        updateWeatherDisplay(weatherData);
+        updateMetricsDisplay(metricsData);
+        updateSensorsDisplay(sensorsData);
+        updateRecommendationsDisplay(recommendationsData);
+        updateChart(weatherData, metricsData);
+
+        document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        showErrorState();
+      }
+    }
+
+    function updateWeatherDisplay(data) {
+      console.log('Weather data received:', data); // Debug log
+      if (!data || (!data.temperature && data.temperature !== 0)) {
+        console.log('No temperature data, using defaults');
+        setWeatherDefaults();
+        return;
+      }
+
+      try {
+        document.getElementById('temperature').textContent = `${data.temperature.toFixed(1)}°C`;
+        document.getElementById('feelsLike').textContent = `Feels like ${(data.temperature + 2).toFixed(1)}°C`;
+        document.getElementById('humidity').textContent = `${data.humidity.toFixed(0)}%`;
+        document.getElementById('dewPoint').textContent = `Dew Point ${(data.temperature - 5).toFixed(1)}°C`;
+        document.getElementById('windSpeed').textContent = `${data.wind_speed.toFixed(1)} m/s`;
+        document.getElementById('windDirection').textContent = `${Math.round(data.wind_direction)}°`;
+        document.getElementById('visibility').textContent = `${data.visibility} km`;
+        document.getElementById('uvIndex').textContent = data.uv_index;
+
+        // Update weather location and time
+        document.getElementById('weatherLocation').textContent = data.location || 'Unknown Location';
+        document.getElementById('weatherTime').textContent = new Date(data.timestamp).toLocaleString();
+
+        console.log('Weather display updated successfully');
+      } catch (error) {
+        console.error('Error updating weather display:', error);
+        setWeatherDefaults();
+      }
+    }
+
+    function setWeatherDefaults() {
+      const temp = 22.5;
+      const humidity = 65;
+      document.getElementById('temperature').textContent = `${temp}°C`;
+      document.getElementById('feelsLike').textContent = `Feels like ${temp + 2}°C`;
+      document.getElementById('humidity').textContent = `${humidity}%`;
+      document.getElementById('dewPoint').textContent = `Dew Point ${temp - 5}°C`;
+      document.getElementById('windSpeed').textContent = '3.2 m/s';
+      document.getElementById('windDirection').textContent = '245°';
+      document.getElementById('visibility').textContent = '12 km';
+      document.getElementById('uvIndex').textContent = '6';
+      document.getElementById('pressure').textContent = '1013.2 hPa';
+    }
+
+    function updateMetricsDisplay(data) {
+      if (!data || !data.air_quality) {
+        setMetricsDefaults();
+        return;
+      }
+
+      // Air Quality
+      const airQuality = data.air_quality;
+      const aqi = airQuality.overall_aqi;
+      document.getElementById('airQualityScore').textContent = aqi.toFixed(0);
+      document.getElementById('airQualityStatus').textContent = getAirQualityStatus(aqi);
+      document.getElementById('pm25Level').textContent = `${airQuality.pm25_level.toFixed(1)} μg/m³`;
+      document.getElementById('no2Level').textContent = `${airQuality.no2_level.toFixed(1)} μg/m³`;
+      document.getElementById('healthRisk').textContent = airQuality.health_risk;
+      updateCardColor('airQualityCard', getMetricLevel(aqi, [0, 50, 100, 150]));
+
+      // Climate Comfort
+      const comfort = data.climate_comfort;
+      document.getElementById('comfortScore').textContent = comfort.comfort_score.toFixed(0);
+      document.getElementById('comfortStatus').textContent = comfort.thermal_stress;
+      document.getElementById('heatIndex').textContent = `${comfort.heat_index.toFixed(1)}°C`;
+      document.getElementById('thermalStress').textContent = comfort.thermal_stress;
+      updateCardColor('comfortCard', getMetricLevel(comfort.comfort_score, [0, 40, 70, 85]));
+
+      // Energy Efficiency
+      const energy = data.energy_efficiency;
+      document.getElementById('energyScore').textContent = `${energy.efficiency_score.toFixed(0)}%`;
+      document.getElementById('energyTrend').textContent = `Trend: ${energy.consumption_trend}`;
+      document.getElementById('avgConsumption').textContent = `${energy.avg_consumption.toFixed(2)} kWh`;
+      document.getElementById('solarGeneration').textContent = `${(energy.avg_consumption * 0.6).toFixed(2)} kWh`;
+      document.getElementById('gridEfficiency').textContent = `${(energy.efficiency_score * 0.9).toFixed(0)}%`;
+      updateCardColor('energyCard', getMetricLevel(energy.efficiency_score, [0, 60, 80, 90]));
+
+      // Water Quality
+      const water = data.water_metrics;
+      document.getElementById('waterQuality').textContent = water.quality_index.toFixed(0);
+      document.getElementById('waterStatus').textContent = water.contamination_risk;
+      document.getElementById('waterQualityIndex').textContent = `${water.quality_index.toFixed(0)}%`;
+      document.getElementById('waterEfficiency').textContent = `${water.usage_efficiency.toFixed(0)}%`;
+      document.getElementById('contaminationRisk').textContent = water.contamination_risk;
+      updateCardColor('waterCard', getMetricLevel(water.quality_index, [0, 60, 80, 90]));
+
+      // Biodiversity
+      const bio = data.biodiversity_indicators;
+      document.getElementById('biodiversityScore').textContent = bio.species_diversity.toFixed(0);
+      document.getElementById('biodiversityStatus').textContent = getBiodiversityStatus(bio.species_diversity);
+      document.getElementById('speciesDiversity').textContent = `${bio.species_diversity.toFixed(0)}%`;
+      document.getElementById('vegetationHealth').textContent = `${bio.vegetation_health.toFixed(0)}%`;
+      document.getElementById('habitatConnectivity').textContent = `${bio.habitat_connectivity.toFixed(0)}%`;
+      updateCardColor('biodiversityCard', getMetricLevel(bio.species_diversity, [0, 50, 70, 85]));
+
+      // Carbon Metrics
+      const carbon = data.carbon_metrics;
+      const carbonScore = Math.max(0, 100 - (carbon.carbon_intensity * 50));
+      document.getElementById('carbonScore').textContent = carbonScore.toFixed(0);
+      document.getElementById('carbonStatus').textContent = getCarbonStatus(carbon.carbon_intensity);
+      document.getElementById('co2Equivalent').textContent = `${carbon.co2_equivalent.toFixed(0)} ppm`;
+      document.getElementById('carbonIntensity').textContent = carbon.carbon_intensity.toFixed(2);
+      document.getElementById('carbonSequestration').textContent = `${carbon.sequestration_potential.toFixed(1)} tons/year`;
+      updateCardColor('carbonCard', getMetricLevel(carbonScore, [0, 60, 80, 90]));
+    }
+
+    function setMetricsDefaults() {
+      // Set default values when no data is available
+      const defaults = {
+        airQuality: { score: 75, status: 'Moderate', pm25: 28.5, no2: 42.3, risk: 'moderate' },
+        comfort: { score: 78, status: 'comfortable', heatIndex: 24.2, stress: 'low' },
+        energy: { score: 85, trend: 'improving', consumption: 2.4, solar: 1.4, grid: 92 },
+        water: { score: 88, status: 'good', quality: 88, efficiency: 82, risk: 'low' },
+        biodiversity: { score: 72, status: 'good', species: 72, vegetation: 84, habitat: 68 },
+        carbon: { score: 76, status: 'moderate', co2: 415, intensity: 0.65, sequestration: 12.3 }
+      };
+
+      // Air Quality
+      document.getElementById('airQualityScore').textContent = defaults.airQuality.score;
+      document.getElementById('airQualityStatus').textContent = defaults.airQuality.status;
+      document.getElementById('pm25Level').textContent = `${defaults.airQuality.pm25} μg/m³`;
+      document.getElementById('no2Level').textContent = `${defaults.airQuality.no2} μg/m³`;
+      document.getElementById('healthRisk').textContent = defaults.airQuality.risk;
+      updateCardColor('airQualityCard', getMetricLevel(defaults.airQuality.score, [0, 50, 100, 150]));
+
+      // Continue with other defaults...
+    }
+
+    function updateCardColor(cardId, level) {
+      const card = document.getElementById(cardId);
+      card.classList.remove('excellent', 'good', 'warning', 'critical');
+      card.classList.add(level);
+    }
+
+    function getMetricLevel(value, thresholds) {
+      if (value >= thresholds[3]) return 'excellent';
+      if (value >= thresholds[2]) return 'good';
+      if (value >= thresholds[1]) return 'warning';
+      return 'critical';
+    }
+
+    function updateSensorsDisplay(data) {
+      const sensorGrid = document.getElementById('sensorGrid');
+      sensorGrid.innerHTML = '';
+
+      if (!data || Object.keys(data).length === 0) {
+        sensorGrid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No sensor data available</div>';
+        return;
+      }
+
+      for (const [sensorId, readings] of Object.entries(data)) {
+        if (!readings || readings.length === 0) continue;
+
+        const latestReading = readings[readings.length - 1];
+        const sensorCard = createSensorCard(sensorId, latestReading);
+        sensorGrid.appendChild(sensorCard);
+      }
+    }
+
+    function createSensorCard(sensorId, reading) {
+      const div = document.createElement('div');
+      div.className = 'sensor-card p-4';
+
+      const statusClass = reading.quality_score > 0.8 ? 'status-online' :
+        reading.quality_score > 0.6 ? 'status-warning' : 'status-critical';
+
+      const sensorIcons = {
+        'pm25': 'fas fa-smog',
+        'no2': 'fas fa-industry',
+        'temperature': 'fas fa-thermometer-half',
+        'humidity': 'fas fa-tint',
+        'power_consumption': 'fas fa-bolt',
+        'default': 'fas fa-microchip'
+      };
+
+      const icon = sensorIcons[reading.sensor_type] || sensorIcons.default;
+
+      div.innerHTML = `
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center">
+                        <i class="${icon} text-blue-500 mr-2"></i>
+                        <h4 class="font-semibold text-gray-900 text-sm">${sensorId.replace(/_/g, ' ').toUpperCase()}</h4>
+                    </div>
+                    <span class="status-indicator ${statusClass}"></span>
+                </div>
+                <div class="space-y-1 text-sm text-gray-600">
+                    <div class="flex justify-between">
+                        <span>Type:</span>
+                        <span class="font-medium">${reading.sensor_type}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Value:</span>
+                        <span class="font-bold text-blue-600">${reading.value.toFixed(2)} ${reading.unit}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Quality:</span>
+                        <span class="font-medium">${(reading.quality_score * 100).toFixed(0)}%</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-2">
+                        Updated: ${new Date(reading.timestamp).toLocaleTimeString()}
+                    </div>
+                </div>
+            `;
+
+      return div;
+    }
+
+    function updateRecommendationsDisplay(recommendations) {
+      const container = document.getElementById('recommendationsContainer');
+
+      if (!recommendations || recommendations.length === 0) {
+        container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-lightbulb text-gray-300 text-4xl mb-4"></i>
+                        <p class="text-gray-500 text-lg mb-2">Generating recommendations...</p>
+                        <p class="text-gray-400 text-sm">AI analysis in progress</p>
+                    </div>
+                `;
+        return;
+      }
+
+      container.innerHTML = recommendations.map(rec => `
+                <div class="recommendation-card ${rec.priority}-priority p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas ${getCategoryIcon(rec.category)} text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-lg">${rec.title}</h3>
+                                <p class="text-sm text-gray-500">${rec.category.replace('_', ' ').toUpperCase()}</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 text-xs font-bold rounded-full ${getPriorityBadgeClass(rec.priority)}">
+                            ${rec.priority.toUpperCase()}
+                        </span>
+                    </div>
+                    <p class="text-gray-700 mb-4 leading-relaxed">${rec.description}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-2xl font-bold text-blue-600">${(rec.impact_score * 100).toFixed(0)}%</div>
+                            <div class="text-xs text-gray-500">Impact Score</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-sm font-bold text-green-600">${rec.implementation_timeframe}</div>
+                            <div class="text-xs text-gray-500">Timeframe</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-sm font-bold text-purple-600">${rec.cost_estimate}</div>
+                            <div class="text-xs text-gray-500">Investment</div>
+                        </div>
+                    </div>
+                    <div class="border-t pt-4">
+                        <div class="mb-2">
+                            <strong class="text-sm text-gray-700">Design Principles:</strong>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            ${rec.design_principles.map(principle =>
+        `<span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">${principle.replace('_', ' ')}</span>`
+      ).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function updateChart(weatherData, metricsData) {
+      if (!weatherData || !metricsData) return;
+
+      const now = new Date().toLocaleTimeString();
+      const maxPoints = currentTimeRange * 2; // 2 points per hour
+
+      // Add new data point
+      environmentalChart.data.labels.push(now);
+      environmentalChart.data.datasets[0].data.push(weatherData.temperature);
+      environmentalChart.data.datasets[1].data.push(metricsData.air_quality?.overall_aqi || 50);
+      environmentalChart.data.datasets[2].data.push(weatherData.humidity);
+      environmentalChart.data.datasets[3].data.push(metricsData.energy_efficiency?.efficiency_score || 75);
+
+      // Remove old data points
+      if (environmentalChart.data.labels.length > maxPoints) {
+        environmentalChart.data.labels.shift();
+        environmentalChart.data.datasets.forEach(dataset => dataset.data.shift());
+      }
+
+      environmentalChart.update('none');
+    }
+
+    function setTimeRange(hours) {
+      currentTimeRange = hours;
+      // Update button styles
+      document.querySelectorAll('button[onclick^="setTimeRange"]').forEach(btn => {
+        btn.className = 'px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-full';
+      });
+      event.target.className = 'px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full';
+    }
+
+    function showErrorState() {
+      document.querySelectorAll('[id$="Score"], [id$="Level"], [id$="Status"]').forEach(el => {
+        if (el.textContent === '--' || el.textContent.includes('Calculating')) {
+          el.textContent = 'Error';
+          el.style.color = '#ef4444';
+        }
+      });
+    }
+
+    // Helper functions
+    function getAirQualityStatus(aqi) {
+      if (aqi <= 50) return 'Good';
+      if (aqi <= 100) return 'Moderate';
+      if (aqi <= 150) return 'Unhealthy for Sensitive';
+      return 'Unhealthy';
+    }
+
+    function getBiodiversityStatus(score) {
+      if (score >= 80) return 'Excellent';
+      if (score >= 60) return 'Good';
+      if (score >= 40) return 'Fair';
+      return 'Poor';
+    }
+
+    function getCarbonStatus(intensity) {
+      if (intensity <= 0.5) return 'Low Impact';
+      if (intensity <= 0.8) return 'Moderate Impact';
+      return 'High Impact';
+    }
+
+    function getPriorityBadgeClass(priority) {
+      switch (priority) {
+        case 'high': return 'bg-red-100 text-red-800';
+        case 'medium': return 'bg-yellow-100 text-yellow-800';
+        case 'low': return 'bg-green-100 text-green-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    }
+
+    function getCategoryIcon(category) {
+      const icons = {
+        'energy': 'fa-bolt',
+        'biodiversity': 'fa-seedling',
+        'water_management': 'fa-tint',
+        'thermal_comfort': 'fa-thermometer-half',
+        'air_quality': 'fa-wind'
+      };
+      return icons[category] || 'fa-lightbulb';
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RegeneraX AI Consultant - Regenerative Architecture Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .consultant-card {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      transition: all 0.3s ease;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .consultant-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .message-bubble {
+      border-radius: 18px;
+      max-width: 80%;
+      word-wrap: break-word;
+      animation: fadeInUp 0.3s ease;
+    }
+
+    .user-message {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      margin-left: auto;
+    }
+
+    .ai-message {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
+    }
+
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-radius: 18px;
+      border: 1px solid #e2e8f0;
+      max-width: 80px;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #64748b;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+
+      0%,
+      60%,
+      100% {
+        transform: translateY(0);
+        opacity: 0.4;
+      }
+
+      30% {
+        transform: translateY(-10px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
+    }
+
+    .chat-container {
+      height: 500px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 #f1f5f9;
+    }
+
+    .chat-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-container::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 3px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .input-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .input-container:focus-within {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      transition: all 0.3s ease;
+    }
+
+    .send-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+  <!-- Navigation -->
+  <nav class="bg-white/90 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div
+            class="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+            <i class="fas fa-leaf text-white"></i>
+          </div>
+          <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            RegeneraX AI Consultant
+          </h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="/visualization/environmental-dashboard-perfect.html"
+            class="text-gray-600 hover:text-purple-600 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+          </a>
+          <div class="flex items-center space-x-2 text-sm text-gray-500">
+            <div class="w-2 h-2 bg-green-400 rounded-full pulse-animation"></div>
+            <span>AI Online</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="text-center mb-12">
+      <h2
+        class="text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 via-blue-600 to-green-600 bg-clip-text text-transparent">
+        Regenerative Architecture AI Consultant
+      </h2>
+      <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        Get intelligent regenerative design recommendations powered by advanced AI.
+        Describe your building project and receive comprehensive ecosystem impact analysis
+        with net-positive design solutions.
+      </p>
+      <div class="flex justify-center items-center mt-6 space-x-6">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-brain text-purple-600"></i>
+          <span class="text-gray-600">Advanced AI Analysis</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-seedling text-green-600"></i>
+          <span class="text-gray-600">Regenerative Design</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-chart-line text-blue-600"></i>
+          <span class="text-gray-600">Impact Assessment</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Consultant Interface -->
+    <div class="max-w-4xl mx-auto">
+      <div class="consultant-card text-white p-8 mb-8">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-robot text-2xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold mb-2">Your AI Design Partner</h3>
+          <p class="text-white/90">
+            Specialized in regenerative architecture, sustainable systems, and ecosystem integration
+          </p>
+        </div>
+      </div>
+
+      <!-- Chat Interface -->
+      <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
+        <!-- Chat Messages -->
+        <div id="chatContainer" class="chat-container p-6 space-y-4">
+          <!-- Welcome Message -->
+          <div class="flex justify-start">
+            <div class="message-bubble ai-message p-4">
+              <div class="flex items-center space-x-2 mb-2">
+                <i class="fas fa-sparkles text-purple-600"></i>
+                <span class="font-semibold text-purple-600">AI Consultant</span>
+              </div>
+              <p class="leading-relaxed">
+                Hello! I'm your regenerative architecture AI consultant. I specialize in:
+                <br><br>
+                🌱 <strong>Ecosystem Integration:</strong> Designing buildings that enhance biodiversity
+                <br>
+                💧 <strong>Water Systems:</strong> Rainwater harvesting, greywater recycling, bioswales
+                <br>
+                ⚡ <strong>Energy Systems:</strong> Renewable energy, passive design, net-positive buildings
+                <br>
+                🏗️ <strong>Materials:</strong> Bio-based, recycled, and regenerative materials
+                <br>
+                🌿 <strong>Carbon Impact:</strong> Carbon sequestration and climate positive design
+                <br><br>
+                Tell me about your building project, location, and goals. I'll analyze its ecosystem impact and propose
+                comprehensive net-positive design solutions!
+              </p>
+            </div>
+          </div>
+
+          <!-- Typing Indicator -->
+          <div id="typingIndicator" class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-6 bg-gray-50/50 border-t border-gray-200/50">
+          <div class="input-container p-4">
+            <div class="flex space-x-4">
+              <textarea id="messageInput"
+                placeholder="Describe your building project, location, size, intended use, and any specific goals or constraints..."
+                class="flex-1 resize-none bg-transparent border-none outline-none min-h-[60px] placeholder-gray-500"
+                rows="3"></textarea>
+              <button id="sendButton"
+                class="send-btn text-white px-6 py-3 rounded-xl font-medium flex items-center space-x-2 self-end">
+                <i class="fas fa-paper-plane"></i>
+                <span>Send</span>
+              </button>
+            </div>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button
+              class="suggestion-btn text-sm bg-white border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-50 transition-colors">
+              🏢 Commercial Building Design
+            </button>
+            <button
+              class="suggestion-btn text-sm bg-white border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-50 transition-colors">
+              🏡 Residential Community Planning
+            </button>
+            <button
+              class="suggestion-btn text-sm bg-white border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-50 transition-colors">
+              🌳 Urban Forest Integration
+            </button>
+            <button
+              class="suggestion-btn text-sm bg-white border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-50 transition-colors">
+              💧 Water Management Systems
+            </button>
+            <button
+              class="suggestion-btn text-sm bg-white border border-gray-300 rounded-full px-4 py-2 hover:bg-gray-50 transition-colors">
+              ⚡ Renewable Energy Integration
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features Grid -->
+      <div class="grid md:grid-cols-3 gap-6 mt-12">
+        <div class="bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50">
+          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+            <i class="fas fa-brain text-purple-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Advanced AI Analysis</h3>
+          <p class="text-gray-600">
+            Leveraging cutting-edge AI to analyze complex ecosystem interactions and design optimal regenerative
+            solutions.
+          </p>
+        </div>
+
+        <div class="bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50">
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+            <i class="fas fa-leaf text-green-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Ecosystem Integration</h3>
+          <p class="text-gray-600">
+            Designs that work with natural systems to enhance biodiversity, water cycles, and carbon sequestration.
+          </p>
+        </div>
+
+        <div class="bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+            <i class="fas fa-chart-bar text-blue-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Impact Measurement</h3>
+          <p class="text-gray-600">
+            Comprehensive metrics for environmental impact, from carbon footprint to biodiversity enhancement.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white/90 backdrop-blur-sm border-t border-gray-200/50 mt-16">
+    <div class="container mx-auto px-4 py-8">
+      <div class="text-center">
+        <div class="flex items-center justify-center space-x-3 mb-4">
+          <div class="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+            <i class="fas fa-leaf text-white text-sm"></i>
+          </div>
+          <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            RegeneraX AI Consultant
+          </span>
+        </div>
+        <p class="text-gray-600">
+          Powered by RegeneraX Environmental Intelligence Platform
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    class AIConsultant {
+      constructor() {
+        this.messages = [];
+        this.isLoading = false;
+        this.initializeElements();
+        this.attachEventListeners();
+      }
+
+      initializeElements() {
+        this.chatContainer = document.getElementById('chatContainer');
+        this.messageInput = document.getElementById('messageInput');
+        this.sendButton = document.getElementById('sendButton');
+        this.typingIndicator = document.getElementById('typingIndicator');
+      }
+
+      attachEventListeners() {
+        this.sendButton.addEventListener('click', () => this.sendMessage());
+        this.messageInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            this.sendMessage();
+          }
+        });
+
+        // Suggestion buttons
+        document.querySelectorAll('.suggestion-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            this.messageInput.value = this.getSuggestionText(btn.textContent.trim());
+            this.messageInput.focus();
+          });
+        });
+
+        // Auto-resize textarea
+        this.messageInput.addEventListener('input', () => {
+          this.messageInput.style.height = 'auto';
+          this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 150) + 'px';
+        });
+      }
+
+      getSuggestionText(suggestion) {
+        const suggestions = {
+          '🏢 Commercial Building Design': 'I need to design a commercial building that integrates with the local ecosystem. Can you help me create a regenerative design approach?',
+          '🏡 Residential Community Planning': 'I\'m planning a residential community that should enhance biodiversity and work with natural water systems. What regenerative strategies would you recommend?',
+          '🌳 Urban Forest Integration': 'How can I integrate urban forest systems into my building design to maximize ecosystem benefits and carbon sequestration?',
+          '💧 Water Management Systems': 'I want to implement comprehensive water management that mimics natural systems. What regenerative water strategies should I consider?',
+          '⚡ Renewable Energy Integration': 'Help me design a net-positive energy system that integrates renewables with the building\'s ecosystem functions.'
+        };
+        return suggestions[suggestion] || suggestion;
+      }
+
+      async sendMessage() {
+        const message = this.messageInput.value.trim();
+        if (!message || this.isLoading) return;
+
+        // Add user message
+        this.addMessage(message, 'user');
+        this.messageInput.value = '';
+        this.messageInput.style.height = 'auto';
+
+        this.setLoading(true);
+
+        try {
+          // Show typing indicator
+          this.showTypingIndicator();
+
+          // Simulate AI processing delay
+          await this.delay(1500);
+
+          // Generate AI response
+          const aiResponse = this.generateAIResponse(message);
+
+          // Hide typing indicator and show response
+          this.hideTypingIndicator();
+          await this.typeMessage(aiResponse, 'ai');
+
+        } catch (error) {
+          console.error('Error:', error);
+          this.hideTypingIndicator();
+          this.addMessage('I apologize, but I encountered an error. Please try again.', 'ai');
+        } finally {
+          this.setLoading(false);
+        }
+      }
+
+      addMessage(content, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = `message-bubble ${sender === 'user' ? 'user-message' : 'ai-message'} p-4`;
+
+        if (sender === 'ai') {
+          const headerDiv = document.createElement('div');
+          headerDiv.className = 'flex items-center space-x-2 mb-2';
+          headerDiv.innerHTML = `
+            <i class="fas fa-sparkles text-purple-600"></i>
+            <span class="font-semibold text-purple-600">AI Consultant</span>
+          `;
+          bubbleDiv.appendChild(headerDiv);
+        }
+
+        const contentP = document.createElement('p');
+        contentP.className = 'leading-relaxed';
+        contentP.innerHTML = this.formatMessage(content);
+        bubbleDiv.appendChild(contentP);
+
+        messageDiv.appendChild(bubbleDiv);
+
+        // Insert before typing indicator
+        const typingIndicator = document.getElementById('typingIndicator');
+        this.chatContainer.insertBefore(messageDiv, typingIndicator);
+
+        this.scrollToBottom();
+      }
+
+      async typeMessage(content, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = `message-bubble ${sender === 'user' ? 'user-message' : 'ai-message'} p-4`;
+
+        if (sender === 'ai') {
+          const headerDiv = document.createElement('div');
+          headerDiv.className = 'flex items-center space-x-2 mb-2';
+          headerDiv.innerHTML = `
+            <i class="fas fa-sparkles text-purple-600"></i>
+            <span class="font-semibold text-purple-600">AI Consultant</span>
+          `;
+          bubbleDiv.appendChild(headerDiv);
+        }
+
+        const contentP = document.createElement('p');
+        contentP.className = 'leading-relaxed';
+        bubbleDiv.appendChild(contentP);
+        messageDiv.appendChild(bubbleDiv);
+
+        // Insert before typing indicator
+        const typingIndicator = document.getElementById('typingIndicator');
+        this.chatContainer.insertBefore(messageDiv, typingIndicator);
+
+        // Type out the message
+        const words = content.split(' ');
+        let currentText = '';
+
+        for (let i = 0; i < words.length; i++) {
+          currentText += (i > 0 ? ' ' : '') + words[i];
+          contentP.innerHTML = this.formatMessage(currentText);
+          this.scrollToBottom();
+          await this.delay(50 + Math.random() * 50); // Variable typing speed
+        }
+      }
+
+      generateAIResponse(userMessage) {
+        const responses = [
+          {
+            keywords: ['commercial', 'office', 'building', 'business'],
+            response: `Excellent! For your commercial building project, I recommend a comprehensive regenerative approach:
+
+🌱 **Ecosystem Integration:**
+- Living building envelope with native plant species
+- Rooftop forest ecosystem for carbon sequestration
+- Pollinator corridors connecting to surrounding green spaces
+- Bioswales for stormwater management
+
+💧 **Water Systems:**
+- Rainwater harvesting system (estimated 40-60% water independence)
+- Greywater recycling for landscape irrigation
+- Constructed wetlands for natural wastewater treatment
+- Permeable surfaces to recharge groundwater
+
+⚡ **Energy Strategy:**
+- Solar canopy integrated with green roof systems
+- Geothermal heating/cooling (30-50% energy reduction)
+- Natural ventilation design reducing HVAC loads
+- Battery storage for grid independence
+
+🏗️ **Regenerative Materials:**
+- Cross-laminated timber structure (carbon storage)
+- Recycled concrete with bio-based aggregates
+- Living concrete that captures CO2
+- Locally sourced materials within 200-mile radius
+
+📊 **Expected Impact:**
+- 75% reduction in carbon footprint
+- 40% increase in local biodiversity
+- Net-positive energy production
+- 60% water independence
+
+Would you like me to elaborate on any of these strategies or discuss implementation phases?`
+          },
+          {
+            keywords: ['residential', 'home', 'housing', 'community'],
+            response: `Perfect! For residential community planning, here's a regenerative ecosystem approach:
+
+🏡 **Community Design:**
+- Clustered housing preserving 60% natural habitat
+- Shared community gardens and food forests
+- Car-free zones with electric micro-mobility
+- Community composting and resource sharing systems
+
+🌳 **Ecosystem Restoration:**
+- Native plant restoration corridors
+- Wildlife habitat creation with nesting sites
+- Stream restoration and wetland creation
+- Soil remediation using mycorrhizal networks
+
+💧 **Integrated Water Management:**
+- Community-scale rainwater harvesting
+- Shared greywater treatment systems
+- Natural swimming ponds doubling as stormwater retention
+- Groundwater recharge through rain gardens
+
+⚡ **Community Energy Systems:**
+- Shared solar array with battery storage
+- Micro-hydro if water features are present
+- Community energy trading platform
+- Passive house design standards
+
+🌿 **Food Production:**
+- Permaculture food forests
+- Vertical farming in common areas
+- Aquaponics systems
+- Native edible landscaping
+
+📊 **Community Benefits:**
+- 80% reduction in per-capita carbon footprint
+- 90% local food production potential
+- Enhanced social cohesion through shared resources
+- Increased property values through ecosystem services
+
+What specific aspects of community planning would you like to explore further?`
+          },
+          {
+            keywords: ['water', 'rain', 'stormwater', 'irrigation'],
+            response: `Excellent focus on regenerative water systems! Here's a comprehensive water management strategy:
+
+💧 **Integrated Water Cycle Design:**
+
+**Rainwater Harvesting:**
+- First-flush diverters for water quality
+- Underground cisterns with natural cooling
+- Gravity-fed distribution system
+- Estimated collection: 0.6 gallons per sq ft of roof per inch of rainfall
+
+**Greywater Systems:**
+- Laundry-to-landscape irrigation
+- Constructed wetland treatment
+- Branched drain distribution
+- 40-50% reduction in potable water use
+
+**Stormwater as Resource:**
+- Bioswales with native plants
+- Rain gardens capturing 1-2 inches of rainfall
+- Permeable paving materials
+- Underground infiltration galleries
+
+**Natural Treatment Systems:**
+- Living machine wastewater treatment
+- Constructed wetlands (90-95% contaminant removal)
+- Sand and gravel filters
+- UV disinfection using solar power
+
+**Ecosystem Benefits:**
+- Groundwater recharge
+- Habitat creation for amphibians and birds
+- Temperature regulation through evapotranspiration
+- Erosion prevention and soil building
+
+📊 **Performance Metrics:**
+- 70-80% water independence achievable
+- 90% stormwater retained on-site
+- 50% reduction in municipal water demand
+- Zero harmful runoff to watersheds
+
+**Implementation Phases:**
+1. Site hydrology assessment
+2. Rainwater harvesting infrastructure
+3. Greywater system installation
+4. Stormwater management features
+5. Natural treatment systems
+
+Would you like detailed specifications for any of these water systems?`
+          },
+          {
+            keywords: ['energy', 'solar', 'renewable', 'power'],
+            response: `Fantastic! Here's a comprehensive net-positive energy strategy integrating with ecosystem functions:
+
+⚡ **Integrated Renewable Energy Systems:**
+
+**Solar Integration:**
+- Building-integrated photovoltaics (BIPV)
+- Solar canopies over parking/outdoor spaces
+- Agrivoltaics combining energy + food production
+- Estimated generation: 15-25 kWh per day per kW installed
+
+**Geothermal Systems:**
+- Closed-loop ground source heat pumps
+- 300-400% efficiency vs conventional systems
+- Minimal landscape disruption
+- Year-round stable temperatures (50-60°F underground)
+
+**Micro-Wind Integration:**
+- Vertical axis wind turbines in high-wind areas
+- Building-augmented wind systems
+- Estimated 2-5 kWh per day per turbine
+
+**Passive Energy Strategies:**
+- Solar orientation and shading design
+- Thermal mass for temperature regulation
+- Natural ventilation systems
+- Daylighting optimization
+
+**Energy Storage & Management:**
+- Battery systems with 10-15 year lifespan
+- Smart grid integration for energy trading
+- Demand response automation
+- Peak shaving and load balancing
+
+**Ecosystem Synergies:**
+- Green roofs providing insulation (20-30% energy reduction)
+- Strategic tree planting for summer cooling
+- Water features for evaporative cooling
+- Living walls for thermal regulation
+
+📊 **Energy Performance:**
+- 60-80% reduction in energy consumption through passive design
+- 120-150% energy generation vs consumption
+- Payback period: 8-12 years
+- 25-year net energy surplus: 200-300 MWh
+
+**Implementation Strategy:**
+1. Energy audit and passive optimization
+2. Solar system installation
+3. Geothermal system integration
+4. Battery storage and smart controls
+5. Grid interconnection and monitoring
+
+What specific renewable energy technology interests you most?`
+          }
+        ];
+
+        // Find matching response based on keywords
+        for (const responseOption of responses) {
+          if (responseOption.keywords.some(keyword =>
+            userMessage.toLowerCase().includes(keyword.toLowerCase())
+          )) {
+            return responseOption.response;
+          }
+        }
+
+        // Default comprehensive response
+        return `Thank you for your question! I'd be happy to help you develop a comprehensive regenerative design strategy. Here's how I approach regenerative architecture:
+
+🔍 **Initial Analysis:**
+To provide the most relevant recommendations, I'd love to know more about:
+- Project location and climate zone
+- Building type and intended use
+- Site size and existing conditions
+- Specific sustainability goals
+- Budget and timeline considerations
+
+🌱 **Core Regenerative Principles:**
+
+**Ecosystem Enhancement:**
+- Designs that increase biodiversity over time
+- Carbon sequestration through integrated vegetation
+- Soil health improvement and restoration
+- Native species habitat creation
+
+**Closed-Loop Systems:**
+- Water capture, treatment, and reuse
+- Waste-to-resource conversion
+- Energy generation exceeding consumption
+- Material cycles that eliminate waste
+
+**Biophilic Integration:**
+- Human-nature connection throughout design
+- Natural light and ventilation optimization
+- Living systems as functional building elements
+- Seasonal adaptability and change
+
+**Climate Resilience:**
+- Passive heating and cooling strategies
+- Storm water management and flood resilience
+- Drought-resistant water systems
+- Flexible design for changing conditions
+
+📊 **Measurable Outcomes:**
+- Net-positive energy and water balance
+- Increased carbon sequestration
+- Enhanced local ecosystem health
+- Improved human health and wellbeing
+
+Could you share more details about your specific project? I can then provide targeted recommendations for your location and building type!`;
+      }
+
+      formatMessage(content) {
+        // Convert markdown-like formatting to HTML
+        return content
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/\n/g, '<br>')
+          .replace(/(\d+[\.\)])/g, '<strong>$1</strong>');
+      }
+
+      showTypingIndicator() {
+        this.typingIndicator.style.display = 'flex';
+        this.scrollToBottom();
+      }
+
+      hideTypingIndicator() {
+        this.typingIndicator.style.display = 'none';
+      }
+
+      setLoading(loading) {
+        this.isLoading = loading;
+        this.sendButton.disabled = loading;
+        this.sendButton.innerHTML = loading
+          ? '<i class="fas fa-spinner fa-spin"></i><span>Processing...</span>'
+          : '<i class="fas fa-paper-plane"></i><span>Send</span>';
+      }
+
+      scrollToBottom() {
+        setTimeout(() => {
+          this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+        }, 100);
+      }
+
+      delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+    }
+
+    // Initialize AI Consultant when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      new AIConsultant();
+    });
+  </script>
+</body>
+
+</html>

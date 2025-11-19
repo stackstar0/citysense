@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Chart Test</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    body {
+      background: #0f0f23;
+      color: white;
+      font-family: Arial;
+      padding: 20px;
+    }
+
+    .chart-container {
+      width: 400px;
+      height: 300px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Chart.js Test</h1>
+
+  <h2>Air Quality Test</h2>
+  <div class="chart-container">
+    <canvas id="test-chart"></canvas>
+  </div>
+
+  <script>
+    console.log('Testing Chart.js...');
+
+    const ctx = document.getElementById('test-chart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['10:00', '10:30', '11:00', '11:30', '12:00'],
+        datasets: [{
+          label: 'Test Data',
+          data: [65, 70, 75, 80, 85],
+          borderColor: '#00ff88',
+          backgroundColor: 'rgba(0, 255, 136, 0.1)',
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            grid: { color: 'rgba(255,255,255,0.1)' },
+            ticks: { color: 'rgba(255,255,255,0.8)' }
+          },
+          x: {
+            grid: { color: 'rgba(255,255,255,0.1)' },
+            ticks: { color: 'rgba(255,255,255,0.8)' }
+          }
+        }
+      }
+    });
+
+    console.log('Test chart created:', chart);
+  </script>
+</body>
+
+</html>
