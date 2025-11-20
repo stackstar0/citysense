@@ -7,7 +7,7 @@ echo "============================================================"
 
 # Test server status
 echo "📡 Testing Server Status..."
-SERVER_STATUS=$(curl -s "http://localhost:9005/api/status" | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])" 2>/dev/null || echo "offline")
+SERVER_STATUS=$(curl -s "http://localhost:9010/api/status" | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])" 2>/dev/null || echo "offline")
 
 if [ "$SERVER_STATUS" = "running" ]; then
     echo "✅ Server: ONLINE"
@@ -23,7 +23,7 @@ echo "🌍 Testing Real Data for Multiple Cities..."
 
 # Test New York
 echo "🗽 New York:"
-curl -s "http://localhost:9005/api/environmental-metrics?city=new-york" | python3 -c "
+curl -s "http://localhost:9010/api/environmental-metrics?city=new-york" | python3 -c "
 import sys,json
 try:
     data=json.load(sys.stdin)
@@ -36,7 +36,7 @@ except: print('   ❌ Error getting data')
 
 # Test Mumbai
 echo "🏙️ Mumbai:"
-curl -s "http://localhost:9005/api/environmental-metrics?city=mumbai" | python3 -c "
+curl -s "http://localhost:9010/api/environmental-metrics?city=mumbai" | python3 -c "
 import sys,json
 try:
     data=json.load(sys.stdin)
@@ -49,7 +49,7 @@ except: print('   ❌ Error getting data')
 
 echo ""
 echo "🌡️ Testing Weather Data..."
-curl -s "http://localhost:9005/api/weather-data?city=new-york" | python3 -c "
+curl -s "http://localhost:9010/api/weather-data?city=new-york" | python3 -c "
 import sys,json
 try:
     data=json.load(sys.stdin)
@@ -57,7 +57,7 @@ try:
 except: print('❌ Weather API error')
 "
 
-curl -s "http://localhost:9005/api/weather-data?city=mumbai" | python3 -c "
+curl -s "http://localhost:9010/api/weather-data?city=mumbai" | python3 -c "
 import sys,json
 try:
     data=json.load(sys.stdin)
@@ -67,12 +67,12 @@ except: print('❌ Weather API error')
 
 echo ""
 echo "🤖 Testing Dynamic Recommendations..."
-RECS=$(curl -s "http://localhost:9005/api/climate-recommendations?city=mumbai" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
+RECS=$(curl -s "http://localhost:9010/api/climate-recommendations?city=mumbai" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
 echo "Mumbai recommendations: $RECS generated"
 
 echo ""
 echo "🔌 Testing IoT Sensors..."
-SENSORS=$(curl -s "http://localhost:9005/api/iot-sensors?city=new-york" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
+SENSORS=$(curl -s "http://localhost:9010/api/iot-sensors?city=new-york" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
 echo "Active IoT sensors: $SENSORS types"
 
 echo ""
@@ -83,8 +83,8 @@ if [ "$SERVER_STATUS" = "running" ] && [ "$RECS" -gt "0" ] && [ "$SENSORS" -gt "
     echo "🎉 ✅ DEPLOYMENT SUCCESSFUL!"
     echo ""
     echo "📊 Dashboard URLs:"
-    echo "   Perfect Dashboard: http://localhost:9005/environmental-dashboard-perfect.html"
-    echo "   Environmental Dashboard: http://localhost:9005/environmental-dashboard.html"
+    echo "   Perfect Dashboard: http://localhost:9010/environmental-dashboard-perfect.html"
+    echo "   Environmental Dashboard: http://localhost:9010/environmental-dashboard.html"
     echo ""
     echo "🚀 All systems operational:"
     echo "   ✅ Environmental metrics displaying real values (no more '--' or 'Error')"
