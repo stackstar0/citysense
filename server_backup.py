@@ -577,7 +577,7 @@ def main():
 
     # Create server instance (use alternate port if 8000 is unavailable)
     # Default port is 8000; switch to 8001 to avoid potential address conflicts
-    regenerax = RegeneraXServer(port=9005)
+    regenerax = RegeneraXServer(port=8001)
     regenerax.start_time = datetime.now()
 
     # Initialize environmental system

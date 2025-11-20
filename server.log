@@ -1,0 +1,18 @@
+nohup: ignoring input
+2025-11-20 05:50:45,831 - INFO - 🌍 Initializing Real-Time Environmental System...
+2025-11-20 05:50:45,832 - INFO - 🌤️ Initializing weather API connections...
+🌱 Starting RegeneraX Web Server...
+✅ Environmental monitoring system initialized
+Traceback (most recent call last):
+  File "/home/hafizas-pc/citysense/server.py", line 630, in <module>
+    main()
+  File "/home/hafizas-pc/citysense/server.py", line 604, in main
+    with RegeneraXHTTPServer(("", regenerax.port), RegeneraXHTTPHandler, regenerax) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hafizas-pc/citysense/server.py", line 599, in __init__
+    super().__init__(server_address, RequestHandlerClass)
+  File "/usr/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/lib/python3.12/socketserver.py", line 473, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use

@@ -700,10 +700,10 @@
       console.log(`Fetching data for city: ${city}`); // Debug log
       try {
         const [weatherResponse, metricsResponse, sensorsResponse, recommendationsResponse] = await Promise.all([
-          fetch(`http://localhost:8000/api/weather-data?city=${city}`),
-          fetch(`http://localhost:8000/api/environmental-metrics?city=${city}`),
-          fetch(`http://localhost:8000/api/iot-sensors?city=${city}`),
-          fetch(`http://localhost:8000/api/climate-recommendations?city=${city}`)
+          fetch(`http://localhost:9005/api/weather-data?city=${city}`),
+          fetch(`http://localhost:9005/api/environmental-metrics?city=${city}`),
+          fetch(`http://localhost:9005/api/iot-sensors?city=${city}`),
+          fetch(`http://localhost:9005/api/climate-recommendations?city=${city}`)
         ]);
 
         console.log('API responses received');
