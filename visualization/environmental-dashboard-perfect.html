@@ -700,10 +700,10 @@
       console.log(`Fetching data for city: ${city}`); // Debug log
       try {
         const [weatherResponse, metricsResponse, sensorsResponse, recommendationsResponse] = await Promise.all([
-          fetch(`http://localhost:9005/api/weather-data?city=${city}`),
-          fetch(`http://localhost:9005/api/environmental-metrics?city=${city}`),
-          fetch(`http://localhost:9005/api/iot-sensors?city=${city}`),
-          fetch(`http://localhost:9005/api/climate-recommendations?city=${city}`)
+          fetch(`http://localhost:9010/api/weather-data?city=${city}`),
+          fetch(`http://localhost:9010/api/environmental-metrics?city=${city}`),
+          fetch(`http://localhost:9010/api/iot-sensors?city=${city}`),
+          fetch(`http://localhost:9010/api/climate-recommendations?city=${city}`)
         ]);
 
         console.log('API responses received');
@@ -797,46 +797,46 @@
       // Climate Comfort
       const comfort = data.climate_comfort;
       document.getElementById('comfortScore').textContent = comfort.comfort_score.toFixed(0);
-      document.getElementById('comfortStatus').textContent = comfort.thermal_stress;
-      document.getElementById('heatIndex').textContent = `${comfort.heat_index.toFixed(1)}°C`;
-      document.getElementById('thermalStress').textContent = comfort.thermal_stress;
+      document.getElementById('comfortStatus').textContent = comfort.humidity_optimal ? 'Optimal' : 'Suboptimal';
+      document.getElementById('heatIndex').textContent = `${comfort.thermal_index.toFixed(1)}°C`;
+      document.getElementById('thermalStress').textContent = comfort.temperature_comfort > 7 ? 'Low' : 'Moderate';
       updateCardColor('comfortCard', getMetricLevel(comfort.comfort_score, [0, 40, 70, 85]));
 
       // Energy Efficiency
       const energy = data.energy_efficiency;
       document.getElementById('energyScore').textContent = `${energy.efficiency_score.toFixed(0)}%`;
-      document.getElementById('energyTrend').textContent = `Trend: ${energy.consumption_trend}`;
-      document.getElementById('avgConsumption').textContent = `${energy.avg_consumption.toFixed(2)} kWh`;
-      document.getElementById('solarGeneration').textContent = `${(energy.avg_consumption * 0.6).toFixed(2)} kWh`;
-      document.getElementById('gridEfficiency').textContent = `${(energy.efficiency_score * 0.9).toFixed(0)}%`;
+      document.getElementById('energyTrend').textContent = `Peak: ${energy.peak_demand.toFixed(0)} kW`;
+      document.getElementById('avgConsumption').textContent = `${(energy.peak_demand / 24).toFixed(2)} kWh`;
+      document.getElementById('solarGeneration').textContent = `${(energy.renewable_percentage / 10).toFixed(2)} kWh`;
+      document.getElementById('gridEfficiency').textContent = `${energy.grid_stability.toFixed(0)}%`;
       updateCardColor('energyCard', getMetricLevel(energy.efficiency_score, [0, 60, 80, 90]));
 
       // Water Quality
       const water = data.water_metrics;
       document.getElementById('waterQuality').textContent = water.quality_index.toFixed(0);
-      document.getElementById('waterStatus').textContent = water.contamination_risk;
+      document.getElementById('waterStatus').textContent = water.quality_index > 80 ? 'Good' : water.quality_index > 60 ? 'Fair' : 'Poor';
       document.getElementById('waterQualityIndex').textContent = `${water.quality_index.toFixed(0)}%`;
       document.getElementById('waterEfficiency').textContent = `${water.usage_efficiency.toFixed(0)}%`;
-      document.getElementById('contaminationRisk').textContent = water.contamination_risk;
+      document.getElementById('contaminationRisk').textContent = water.treatment_effectiveness > 85 ? 'Low' : 'Moderate';
       updateCardColor('waterCard', getMetricLevel(water.quality_index, [0, 60, 80, 90]));
 
       // Biodiversity
       const bio = data.biodiversity_indicators;
-      document.getElementById('biodiversityScore').textContent = bio.species_diversity.toFixed(0);
-      document.getElementById('biodiversityStatus').textContent = getBiodiversityStatus(bio.species_diversity);
-      document.getElementById('speciesDiversity').textContent = `${bio.species_diversity.toFixed(0)}%`;
-      document.getElementById('vegetationHealth').textContent = `${bio.vegetation_health.toFixed(0)}%`;
-      document.getElementById('habitatConnectivity').textContent = `${bio.habitat_connectivity.toFixed(0)}%`;
-      updateCardColor('biodiversityCard', getMetricLevel(bio.species_diversity, [0, 50, 70, 85]));
+      document.getElementById('biodiversityScore').textContent = bio.habitat_quality.toFixed(0);
+      document.getElementById('biodiversityStatus').textContent = getBiodiversityStatus(bio.habitat_quality);
+      document.getElementById('speciesDiversity').textContent = `${bio.native_species_ratio.toFixed(0)}%`;
+      document.getElementById('vegetationHealth').textContent = `${bio.habitat_quality.toFixed(0)}%`;
+      document.getElementById('habitatConnectivity').textContent = `${bio.ecosystem_connectivity.toFixed(0)}%`;
+      updateCardColor('biodiversityCard', getMetricLevel(bio.habitat_quality, [0, 50, 70, 85]));
 
       // Carbon Metrics
       const carbon = data.carbon_metrics;
       const carbonScore = Math.max(0, 100 - (carbon.carbon_intensity * 50));
       document.getElementById('carbonScore').textContent = carbonScore.toFixed(0);
       document.getElementById('carbonStatus').textContent = getCarbonStatus(carbon.carbon_intensity);
-      document.getElementById('co2Equivalent').textContent = `${carbon.co2_equivalent.toFixed(0)} ppm`;
-      document.getElementById('carbonIntensity').textContent = carbon.carbon_intensity.toFixed(2);
-      document.getElementById('carbonSequestration').textContent = `${carbon.sequestration_potential.toFixed(1)} tons/year`;
+      document.getElementById('co2Equivalent').textContent = `${(carbon.emissions_per_capita * 100 + 350).toFixed(0)} ppm`;
+      document.getElementById('carbonIntensity').textContent = carbon.carbon_intensity.toFixed(3);
+      document.getElementById('carbonSequestration').textContent = `${carbon.sequestration_rate.toFixed(1)} tons/year`;
       updateCardColor('carbonCard', getMetricLevel(carbonScore, [0, 60, 80, 90]));
     }
 

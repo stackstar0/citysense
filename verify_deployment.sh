@@ -18,7 +18,7 @@ echo "   Mumbai AQI:" $(curl -s "http://localhost:9005/api/environmental-metrics
 echo "✅ IoT Sensors API Tests:"
 echo "   Sensor Count:" $(curl -s "http://localhost:9005/api/iot-sensors?city=mumbai" | python3 -c "import sys,json; data=json.load(sys.stdin); print(f'{len(data)} active sensor types')" 2>/dev/null || echo "FAIL")
 
-echo "✅ Climate Recommendations API Tests:"  
+echo "✅ Climate Recommendations API Tests:"
 echo "   Mumbai Recommendations:" $(curl -s "http://localhost:9005/api/climate-recommendations?city=mumbai" | python3 -c "import sys,json; data=json.load(sys.stdin); print(f'{len(data)} dynamic recommendations')" 2>/dev/null || echo "FAIL")
 echo "   Dubai Recommendations:" $(curl -s "http://localhost:9005/api/climate-recommendations?city=dubai" | python3 -c "import sys,json; data=json.load(sys.stdin); print(f'{len(data)} dynamic recommendations')" 2>/dev/null || echo "FAIL")
 

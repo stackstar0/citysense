@@ -803,24 +803,8 @@ class RealTimeEnvironmentalSystem:
 
     async def get_iot_sensors(self, city='new-york') -> Dict[str, Any]:
         """Get IoT sensor data for specific city"""
-        if city != 'new-york':
-            return await self._generate_city_iot_sensors(city)
-        # Return existing IoT sensor data for New York
-        sensors = {}
-        for location, readings in self.sensor_history.items():
-            if readings:
-                latest = readings[-1]
-                sensors[location] = [{
-                    'sensor_id': latest.sensor_id,
-                    'sensor_type': latest.sensor_type,
-                    'location': latest.location,
-                    'timestamp': latest.timestamp.isoformat(),
-                    'value': latest.value,
-                    'unit': latest.unit,
-                    'quality_score': latest.quality_score,
-                    'metadata': latest.metadata
-                }]
-        return sensors
+        # Always generate fresh IoT sensor data for any city
+        return await self._generate_city_iot_sensors(city)
 
     async def get_historical_data(self, hours: int = 24) -> Dict[str, Any]:
         """Get historical environmental data"""
