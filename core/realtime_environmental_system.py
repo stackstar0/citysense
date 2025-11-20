@@ -797,9 +797,8 @@ class RealTimeEnvironmentalSystem:
 
     async def get_recommendations(self, city='new-york') -> List[ClimateRecommendation]:
         """Get current climate-responsive recommendations for specific city"""
-        if city != 'new-york':
-            return await self._generate_city_recommendations(city)
-        return self.recommendations
+        # Always generate fresh recommendations for any city including New York
+        return await self._generate_city_recommendations(city)
 
     async def get_iot_sensors(self, city='new-york') -> Dict[str, Any]:
         """Get IoT sensor data for specific city"""
