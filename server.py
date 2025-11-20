@@ -596,6 +596,7 @@ def main():
     class RegeneraXHTTPServer(socketserver.TCPServer):
         def __init__(self, server_address, RequestHandlerClass, server_instance):
             self.server_instance = server_instance
+            self.allow_reuse_address = True
             super().__init__(server_address, RequestHandlerClass)
 
         def finish_request(self, request, client_address):
